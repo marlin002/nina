@@ -3,7 +3,7 @@ namespace :scrape do
   task :all => :environment do
     puts "🚀 Queueing scraping jobs for all enabled sources..."
     
-    enabled_sources = Source.all.select { |s| s.settings['enabled'] == true }
+    enabled_sources = Source.current.select { |s| s.settings['enabled'] == true }
     queued_count = 0
     
     enabled_sources.find_each do |source|
@@ -25,7 +25,7 @@ namespace :scrape do
   task :recent => :environment do
     puts "🚀 Queueing scraping jobs for recently added sources..."
     
-    recent_sources = Source.where(created_at: 1.hour.ago..).select { |s| s.settings['enabled'] == true }
+    recent_sources = Source.current.where(created_at: 1.hour.ago..).select { |s| s.settings['enabled'] == true }
     
     if recent_sources.any?
       queued_count = 0
@@ -46,10 +46,10 @@ namespace :scrape do
     puts "📋 Scraping Status Report"
     puts "=" * 50
     
-    total_sources = Source.count
-    enabled_sources = Source.all.count { |s| s.settings['enabled'] == true }
-    sources_with_articles = Source.joins(:articles).distinct.count
-    total_articles = Article.count
+    total_sources = Source.current.count
+    enabled_sources = Source.current.count { |s| s.settings['enabled'] == true }
+    sources_with_articles = Source.current.joins(:articles).distinct.count
+    total_articles = Article.current.count
     
     puts "\n📊 Overall Statistics:"
     puts "  Sources: #{total_sources} total, #{enabled_sources} enabled"

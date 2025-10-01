@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_10_01_144620) do
+ActiveRecord::Schema[7.2].define(version: 2025_10_01_195730) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -23,8 +23,14 @@ ActiveRecord::Schema[7.2].define(version: 2025_10_01_144620) do
     t.bigint "source_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "current", default: true, null: false
+    t.integer "version", default: 1, null: false
+    t.datetime "superseded_at", precision: nil
+    t.index ["current"], name: "index_articles_on_current"
     t.index ["fetched_at"], name: "index_articles_on_fetched_at"
     t.index ["source_id"], name: "index_articles_on_source_id"
+    t.index ["url", "source_id", "current"], name: "index_articles_on_url_source_current"
+    t.index ["url", "source_id", "version"], name: "index_articles_on_url_source_version"
     t.index ["url"], name: "index_articles_on_url"
   end
 
@@ -124,7 +130,13 @@ ActiveRecord::Schema[7.2].define(version: 2025_10_01_144620) do
     t.text "settings"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["url"], name: "index_sources_on_url", unique: true
+    t.boolean "current", default: true, null: false
+    t.integer "version", default: 1, null: false
+    t.datetime "superseded_at", precision: nil
+    t.index ["current"], name: "index_sources_on_current"
+    t.index ["url", "current"], name: "index_sources_on_url_current"
+    t.index ["url", "current"], name: "index_sources_on_url_current_unique", unique: true, where: "(current = true)"
+    t.index ["url", "version"], name: "index_sources_on_url_version"
   end
 
   add_foreign_key "articles", "sources"

@@ -205,33 +205,44 @@ class SourceScraperJob < ApplicationJob
   def store_articles(articles_data)
     articles_data.each do |article_data|
       begin
-        # Check if article already exists
-        existing_article = Article.find_by(url: article_data[:url], source: @source)
+        # Check if current article already exists for this URL + source
+        existing_article = Article.find_by(url: article_data[:url], source: @source, current: true)
         
         if existing_article
-          # Update existing article if content has changed
+          # Check if content has changed
           if content_changed?(existing_article, article_data)
-            existing_article.update!(
+            # Mark current article as historical
+            existing_article.supersede!
+            Rails.logger.info "Superseded article version #{existing_article.version}: #{existing_article.title}"
+            
+            # Create new version
+            new_version = Article.create!(
               title: article_data[:title],
+              url: article_data[:url],
               raw_html: article_data[:raw_html],
               plain_text: article_data[:plain_text],
-              fetched_at: Time.current
+              source: @source,
+              fetched_at: Time.current,
+              version: existing_article.next_version_number,
+              current: true
             )
-            Rails.logger.info "Updated article: #{article_data[:title]}"
+            Rails.logger.info "Created new article version #{new_version.version}: #{new_version.title}"
           else
             Rails.logger.debug "Article unchanged: #{article_data[:title]}"
           end
         else
-          # Create new article
-          Article.create!(
+          # Create first version of article
+          new_article = Article.create!(
             title: article_data[:title],
             url: article_data[:url],
             raw_html: article_data[:raw_html],
             plain_text: article_data[:plain_text],
             source: @source,
-            fetched_at: Time.current
+            fetched_at: Time.current,
+            version: 1,
+            current: true
           )
-          Rails.logger.info "Created new article: #{article_data[:title]}"
+          Rails.logger.info "Created new article: #{new_article.title}"
         end
       rescue ActiveRecord::RecordInvalid => e
         Rails.logger.warn "Failed to save article '#{article_data[:title]}': #{e.message}"

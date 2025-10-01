@@ -3,7 +3,18 @@ class Article < ApplicationRecord
 
   validates :url, presence: true, format: { with: URI::DEFAULT_PARSER.make_regexp }
   validates :title, presence: true
+  validates :version, presence: true, numericality: { greater_than: 0 }
   
+  # Versioning scopes
+  scope :current, -> { where(current: true) }
+  scope :historical, -> { where(current: false) }
+  scope :versions, -> { order(:version) }
+  scope :for_url, ->(url) { where(url: url) }
+  
+  # Default scope: only show current articles
+  default_scope { current }
+  
+  # Original scopes (now apply to current articles only by default)
   scope :recent, -> { order(fetched_at: :desc) }
   scope :by_source, ->(source) { where(source: source) }
   scope :today, -> { where(fetched_at: Date.current.all_day) }
@@ -42,6 +53,32 @@ class Article < ApplicationRecord
   # Check if article content needs to be refreshed
   def stale?(hours = 24)
     fetched_at < hours.hours.ago
+  end
+  
+  # Versioning methods
+  def supersede!
+    update!(current: false, superseded_at: Time.current)
+  end
+  
+  def next_version_number
+    max_version = Article.unscoped.where(url: url, source: source).maximum(:version) || 0
+    max_version + 1
+  end
+  
+  def all_versions
+    Article.unscoped.where(url: url, source: source).versions
+  end
+  
+  def previous_version
+    Article.unscoped.where(url: url, source: source, version: version - 1).first
+  end
+  
+  def next_version
+    Article.unscoped.where(url: url, source: source, version: version + 1).first
+  end
+  
+  def current_version?
+    current
   end
   
   private

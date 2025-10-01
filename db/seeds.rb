@@ -40,15 +40,21 @@ existing_count = 0
 
 regulation_urls.each_with_index do |url, index|
   begin
-    source = Source.find_or_create_by(url: url) do |s|
-      s.settings = standard_settings
-      created_count += 1
-      puts "  ✅ Created source #{index + 1}/#{regulation_urls.length}: AFS 2023:#{index + 1}"
-    end
+    # Use unscoped to check all versions, but find current version
+    existing_source = Source.unscoped.find_by(url: url, current: true)
     
-    if source.persisted? && !source.previous_changes.key?('id')
+    if existing_source
       existing_count += 1
       puts "  ♻️  Found existing source #{index + 1}/#{regulation_urls.length}: AFS 2023:#{index + 1}"
+    else
+      source = Source.create!(
+        url: url,
+        settings: standard_settings,
+        version: 1,
+        current: true
+      )
+      created_count += 1
+      puts "  ✅ Created source #{index + 1}/#{regulation_urls.length}: AFS 2023:#{index + 1}"
     end
     
   rescue => e
