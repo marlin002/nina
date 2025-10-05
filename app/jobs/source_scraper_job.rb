@@ -19,13 +19,13 @@ class SourceScraperJob < ApplicationJob
     # Fetch the HTML content
     html_content = fetch_content(@source.url)
     
-    # Parse the HTML and extract articles
-    articles_data = parse_content(html_content, @source.url)
+    # Parse the HTML and extract scrapes
+    scrapes_data = parse_content(html_content, @source.url)
     
-    # Store the articles
-    store_articles(articles_data)
+    # Store the scrapes
+    store_scrapes(scrapes_data)
     
-    Rails.logger.info "Completed scrape for source: #{@source.url}. Found #{articles_data.length} articles."
+    Rails.logger.info "Completed scrape for source: #{@source.url}. Found #{scrapes_data.length} scrapes."
     
   rescue => e
     Rails.logger.error "Error scraping source #{@source&.url}: #{e.message}"
@@ -52,7 +52,6 @@ class SourceScraperJob < ApplicationJob
       'User-Agent' => settings.fetch('user_agent', 'Nina Swedish Content Scraper 1.0'),
       'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
       'Accept-Language' => 'sv-SE,sv;q=0.9,en-US;q=0.8,en;q=0.5',
-      'Accept-Encoding' => 'gzip, deflate',
       'Accept-Charset' => 'UTF-8,*;q=0.5',
       'Cache-Control' => 'no-cache'
     }
@@ -68,87 +67,43 @@ class SourceScraperJob < ApplicationJob
   
   def parse_content(html_content, base_url)
     doc = Nokogiri::HTML(html_content)
-    articles = []
+    scrapes = []
     
-    # Try to find articles using common patterns (including Swedish sites)
-    article_selectors = [
-      '.paragraph',  # Primary selector for AV.se and similar sites
-      'article',
-      '.post', '.entry', '.article',
-      '[class*="post"]', '[class*="article"]', '[class*="entry"]',
-      '.news-item', '.nyhet', '.artikel',  # Swedish news patterns
-      '[class*="news"]', '[class*="nyhet"]', '[class*="artikel"]',
-      '[class*="paragraph"]',
-      'item', '.item'
-    ]
+    # Look specifically for .provision elements
+    provision_element = doc.at_css('.provision')
     
-    found_articles = false
-    
-    article_selectors.each do |selector|
-      elements = doc.css(selector)
-      next if elements.empty?
-      
-      elements.each do |element|
-        article_data = extract_article_data(element, base_url)
-        if article_data && article_data[:title].present?
-          articles << article_data
-          found_articles = true
-        end
+    if provision_element
+      scrape_data = extract_scrape_data(provision_element, base_url)
+      if scrape_data
+        scrapes << scrape_data
+        Rails.logger.info "Found .provision content (#{scrape_data[:raw_html].length} chars)"
+      else
+        Rails.logger.warn "Found .provision element but could not extract scrape data"
       end
-      
-      break if found_articles && articles.any?
+    else
+      Rails.logger.warn "No .provision element found on page: #{base_url}"
     end
     
-    # If no articles found with selectors, treat the whole page as one article
-    if articles.empty?
-      article_data = extract_article_data(doc, base_url)
-      articles << article_data if article_data && article_data[:title].present?
-    end
-    
-    articles
+    scrapes
   end
   
-  def extract_article_data(element, base_url)
-    # Extract title
-    title = extract_title(element)
-    return nil if title.blank?
+  def extract_scrape_data(element, base_url)
+    # Extract content URL (prefer links within the element, fallback to base_url)
+    content_url = extract_content_url(element, base_url)
     
-    # Extract article URL (prefer links within the element, fallback to base_url)
-    article_url = extract_article_url(element, base_url)
-    
-    # Extract content - focus on .provision if it exists, otherwise use full element
-    content_element = extract_provision_content(element)
-    raw_html = content_element.to_html
-    plain_text = extract_plain_text(content_element)
+    # Extract content from the provision element and its children
+    raw_html = element.to_html
+    plain_text = extract_plain_text(element)
     
     {
-      title: title.strip,
-      url: article_url,
+      url: content_url,
       raw_html: raw_html,
       plain_text: plain_text.strip
     }
   end
   
-  def extract_title(element)
-    # Try different title selectors in order of preference
-    title_selectors = ['h1', 'h2', 'h3', '.title', '[class*="title"]', 'title']
-    
-    title_selectors.each do |selector|
-      title_element = element.at_css(selector)
-      if title_element && title_element.text.present?
-        return title_element.text.strip
-      end
-    end
-    
-    # Fallback: use first text content if it looks like a title
-    first_text = element.text.strip.split("\n").first
-    return first_text if first_text && first_text.length < 200
-    
-    nil
-  end
-  
-  def extract_article_url(element, base_url)
-    # Look for links within the article
+  def extract_content_url(element, base_url)
+    # Look for links within the content
     link = element.at_css('a[href]')
     if link
       href = link['href']
@@ -157,19 +112,6 @@ class SourceScraperJob < ApplicationJob
     
     # Fallback to base URL
     base_url
-  end
-  
-  def extract_provision_content(element)
-    # Look for .provision div within the element
-    provision = element.at_css('.provision')
-    
-    if provision
-      Rails.logger.debug "Found .provision content, using it instead of full element"
-      return provision
-    else
-      Rails.logger.debug "No .provision found, using full element"
-      return element
-    end
   end
   
   def extract_plain_text(element)
@@ -202,57 +144,54 @@ class SourceScraperJob < ApplicationJob
     base_url
   end
   
-  def store_articles(articles_data)
-    articles_data.each do |article_data|
+  def store_scrapes(scrapes_data)
+    scrapes_data.each do |scrape_data|
       begin
-        # Check if current article already exists for this URL + source
-        existing_article = Article.find_by(url: article_data[:url], source: @source, current: true)
+        # Check if current scrape already exists for this URL + source
+        existing_scrape = Scrape.find_by(url: scrape_data[:url], source: @source, current: true)
         
-        if existing_article
+        if existing_scrape
           # Check if content has changed
-          if content_changed?(existing_article, article_data)
-            # Mark current article as historical
-            existing_article.supersede!
-            Rails.logger.info "Superseded article version #{existing_article.version}: #{existing_article.title}"
+          if content_changed?(existing_scrape, scrape_data)
+            # Mark current scrape as historical
+            existing_scrape.supersede!
+            Rails.logger.info "Superseded scrape version #{existing_scrape.version} for URL: #{existing_scrape.url}"
             
             # Create new version
-            new_version = Article.create!(
-              title: article_data[:title],
-              url: article_data[:url],
-              raw_html: article_data[:raw_html],
-              plain_text: article_data[:plain_text],
+            new_version = Scrape.create!(
+              url: scrape_data[:url],
+              raw_html: scrape_data[:raw_html],
+              plain_text: scrape_data[:plain_text],
               source: @source,
               fetched_at: Time.current,
-              version: existing_article.next_version_number,
+              version: existing_scrape.next_version_number,
               current: true
             )
-            Rails.logger.info "Created new article version #{new_version.version}: #{new_version.title}"
+            Rails.logger.info "Created new scrape version #{new_version.version} for URL: #{new_version.url}"
           else
-            Rails.logger.debug "Article unchanged: #{article_data[:title]}"
+            Rails.logger.debug "Scrape unchanged for URL: #{scrape_data[:url]}"
           end
         else
-          # Create first version of article
-          new_article = Article.create!(
-            title: article_data[:title],
-            url: article_data[:url],
-            raw_html: article_data[:raw_html],
-            plain_text: article_data[:plain_text],
+          # Create first version of scrape
+          new_scrape = Scrape.create!(
+            url: scrape_data[:url],
+            raw_html: scrape_data[:raw_html],
+            plain_text: scrape_data[:plain_text],
             source: @source,
             fetched_at: Time.current,
             version: 1,
             current: true
           )
-          Rails.logger.info "Created new article: #{new_article.title}"
+          Rails.logger.info "Created new scrape ID #{new_scrape.id} for URL: #{new_scrape.url}"
         end
       rescue ActiveRecord::RecordInvalid => e
-        Rails.logger.warn "Failed to save article '#{article_data[:title]}': #{e.message}"
+        Rails.logger.warn "Failed to save scrape for URL '#{scrape_data[:url]}': #{e.message}"
       end
     end
   end
   
-  def content_changed?(existing_article, new_data)
-    existing_article.title != new_data[:title] ||
-      existing_article.raw_html != new_data[:raw_html] ||
-      existing_article.plain_text != new_data[:plain_text]
+  def content_changed?(existing_scrape, new_data)
+    existing_scrape.raw_html != new_data[:raw_html] ||
+      existing_scrape.plain_text != new_data[:plain_text]
   end
 end

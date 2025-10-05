@@ -26,5 +26,14 @@ module Nina
 
     # Use GoodJob for background jobs
     config.active_job.queue_adapter = :good_job
+    
+    # Configure GoodJob cron for daily scraping
+    config.good_job.cron = {
+      daily_scrape: {
+        cron: '0 2 * * *', # Run daily at 2 AM
+        class: 'DailyScrapeJob',
+        description: 'Daily scraping of all enabled sources'
+      }
+    }
   end
 end

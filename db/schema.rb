@@ -10,29 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_10_01_195730) do
+ActiveRecord::Schema[7.2].define(version: 2025_10_05_205104) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
-
-  create_table "articles", force: :cascade do |t|
-    t.string "title"
-    t.string "url", null: false
-    t.text "raw_html"
-    t.text "plain_text"
-    t.datetime "fetched_at"
-    t.bigint "source_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.boolean "current", default: true, null: false
-    t.integer "version", default: 1, null: false
-    t.datetime "superseded_at", precision: nil
-    t.index ["current"], name: "index_articles_on_current"
-    t.index ["fetched_at"], name: "index_articles_on_fetched_at"
-    t.index ["source_id"], name: "index_articles_on_source_id"
-    t.index ["url", "source_id", "current"], name: "index_articles_on_url_source_current"
-    t.index ["url", "source_id", "version"], name: "index_articles_on_url_source_version"
-    t.index ["url"], name: "index_articles_on_url"
-  end
 
   create_table "good_job_batches", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -125,6 +105,25 @@ ActiveRecord::Schema[7.2].define(version: 2025_10_01_195730) do
     t.index ["scheduled_at"], name: "index_good_jobs_on_scheduled_at", where: "(finished_at IS NULL)"
   end
 
+  create_table "scrapes", force: :cascade do |t|
+    t.string "url", null: false
+    t.text "raw_html"
+    t.text "plain_text"
+    t.datetime "fetched_at"
+    t.bigint "source_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "current", default: true, null: false
+    t.integer "version", default: 1, null: false
+    t.datetime "superseded_at", precision: nil
+    t.index ["current"], name: "index_scrapes_on_current"
+    t.index ["fetched_at"], name: "index_scrapes_on_fetched_at"
+    t.index ["source_id"], name: "index_scrapes_on_source_id"
+    t.index ["url", "source_id", "current"], name: "index_scrapes_on_url_source_current"
+    t.index ["url", "source_id", "version"], name: "index_scrapes_on_url_source_version"
+    t.index ["url"], name: "index_scrapes_on_url"
+  end
+
   create_table "sources", force: :cascade do |t|
     t.string "url", null: false
     t.text "settings"
@@ -139,5 +138,5 @@ ActiveRecord::Schema[7.2].define(version: 2025_10_01_195730) do
     t.index ["url", "version"], name: "index_sources_on_url_version"
   end
 
-  add_foreign_key "articles", "sources"
+  add_foreign_key "scrapes", "sources"
 end

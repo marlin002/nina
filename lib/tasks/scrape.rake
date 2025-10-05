@@ -6,7 +6,7 @@ namespace :scrape do
     enabled_sources = Source.current.select { |s| s.settings['enabled'] == true }
     queued_count = 0
     
-    enabled_sources.find_each do |source|
+    enabled_sources.each do |source|
       source.scrape!
       queued_count += 1
       puts "  ✅ Queued: AFS 2023:#{source.url.split('/').last.split('-').last.gsub('afs','').gsub('2023','')}"
@@ -29,7 +29,7 @@ namespace :scrape do
     
     if recent_sources.any?
       queued_count = 0
-      recent_sources.find_each do |source|
+      recent_sources.each do |source|
         source.scrape!
         queued_count += 1
         puts "  ✅ Queued: #{source.url}"
@@ -48,20 +48,20 @@ namespace :scrape do
     
     total_sources = Source.current.count
     enabled_sources = Source.current.count { |s| s.settings['enabled'] == true }
-    sources_with_articles = Source.current.joins(:articles).distinct.count
-    total_articles = Article.current.count
+    sources_with_scrapes = Source.current.joins(:scrapes).distinct.count
+    total_scrapes = Scrape.current.count
     
     puts "\n📊 Overall Statistics:"
     puts "  Sources: #{total_sources} total, #{enabled_sources} enabled"
-    puts "  Articles: #{total_articles} total from #{sources_with_articles} sources"
+    puts "  Scrapes: #{total_scrapes} total from #{sources_with_scrapes} sources"
     
     puts "\n🏛️ AV.se Regulation Status:"
     Source.order(:url).each_with_index do |source, index|
       afs_number = source.url.split('/').last.split('-').last.gsub('afs','').gsub('2023','')
-      article_count = source.articles.count
-      last_scraped = source.articles.maximum(:fetched_at)
+      scrape_count = source.scrapes.count
+      last_scraped = source.scrapes.maximum(:fetched_at)
       
-      status = article_count > 0 ? "✅ #{article_count} articles" : "⏳ Not scraped yet"
+      status = scrape_count > 0 ? "✅ #{scrape_count} scrapes" : "⏳ Not scraped yet"
       last_update = last_scraped ? " (last: #{last_scraped.strftime('%Y-%m-%d %H:%M')})" : ""
       
       puts "  AFS 2023:#{afs_number.ljust(2)} - #{status}#{last_update}"

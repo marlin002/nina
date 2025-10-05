@@ -30,24 +30,22 @@ source = Source.create!(
 - `domain`: Returns the domain from the URL
 - `display_name`: Returns a human-readable name (currently the URL)
 
-### Article Model
+### Scrape Model
 
-Represents a scraped article with content and metadata.
+Represents scraped `.provision` content with metadata from web scraping. Each scrape contains the complete provision element and its children from legal/regulatory documents.
 
 **Fields:**
-- `title`: Article title (required)
-- `url`: Article URL (required)
+- `url`: Scraped content URL (required)
 - `raw_html`: Original HTML content
 - `plain_text`: Extracted text content
-- `fetched_at`: When the article was fetched (auto-set)
+- `fetched_at`: When the content was fetched (auto-set)
 - `source_id`: Foreign key to Source
 - `created_at`, `updated_at`: Timestamps
 
 **Example:**
 ```ruby
-article = Article.create!(
-  title: "Interesting Article",
-  url: "https://example.com/article/1",
+scrape = Scrape.create!(
+  url: "https://example.com/content/1",
   raw_html: "<h1>Title</h1><p>Content...</p>",
   plain_text: "Title\n\nContent...",
   source: source
@@ -55,9 +53,9 @@ article = Article.create!(
 ```
 
 **Methods:**
-- `display_title`: Truncated title for display
+- `display_name`: Display name with ID and URL
 - `content_summary(limit)`: Summary of content
-- `has_content?`: Check if article has content
+- `has_content?`: Check if scrape has content
 - `word_count`: Number of words in plain text
 - `reading_time_minutes`: Estimated reading time
 - `stale?(hours)`: Check if content needs refresh
@@ -65,19 +63,18 @@ article = Article.create!(
 **Scopes:**
 - `recent`: Order by fetched_at descending
 - `by_source(source)`: Filter by source
-- `today`: Articles fetched today
+- `today`: Scrapes fetched today
 
 ## Usage Examples
 
-### Creating a Source and Articles
+### Creating a Source and Scrapes
 
 ```ruby
 # Create a source
 source = Source.create!(url: "https://news.example.com/feed")
 
-# Create articles from scraping
-article = Article.create!(
-  title: "Breaking News",
+# Create scrapes from scraping
+scrape = Scrape.create!(
   url: "https://news.example.com/breaking-news",
   raw_html: scraped_html,
   plain_text: extracted_text,
@@ -85,25 +82,25 @@ article = Article.create!(
 )
 
 # Access relationships
-puts "Source has #{source.articles.count} articles"
-puts "Article from #{article.source.domain}"
+puts "Source has #{source.scrapes.count} scrapes"
+puts "Scrape from #{scrape.source.domain}"
 ```
 
 ### Querying
 
 ```ruby
-# Get recent articles
-recent_articles = Article.recent.limit(10)
+# Get recent scrapes
+recent_scrapes = Scrape.recent.limit(10)
 
-# Get articles from a specific source
-source_articles = Article.by_source(source)
+# Get scrapes from a specific source
+source_scrapes = Scrape.by_source(source)
 
-# Get articles that need refreshing
-stale_articles = Article.all.select(&:stale?)
+# Get scrapes that need refreshing
+stale_scrapes = Scrape.all.select(&:stale?)
 
 # Get reading statistics
-total_words = Article.sum(&:word_count)
-avg_reading_time = Article.average(:reading_time_minutes)
+total_words = Scrape.sum(&:word_count)
+avg_reading_time = Scrape.average(:reading_time_minutes)
 ```
 
 ## Database Schema
@@ -111,6 +108,6 @@ avg_reading_time = Article.average(:reading_time_minutes)
 The models create the following tables:
 
 - `sources`: URL, settings (JSON), timestamps, unique index on URL
-- `articles`: Title, URL, HTML/text content, fetched_at, source FK, indexes on URL and fetched_at
+- `scrapes`: URL, HTML/text content, fetched_at, source FK, indexes on URL and fetched_at
 
-Foreign key constraint ensures referential integrity between articles and sources.
+Foreign key constraint ensures referential integrity between scrapes and sources.

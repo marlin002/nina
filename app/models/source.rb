@@ -1,5 +1,5 @@
 class Source < ApplicationRecord
-  has_many :articles, dependent: :destroy
+  has_many :scrapes, dependent: :destroy
 
   validates :url, presence: true, format: { with: URI::DEFAULT_PARSER.make_regexp }
   validates :version, presence: true, numericality: { greater_than: 0 }

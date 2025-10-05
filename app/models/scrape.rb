@@ -1,8 +1,7 @@
-class Article < ApplicationRecord
+class Scrape < ApplicationRecord
   belongs_to :source
 
   validates :url, presence: true, format: { with: URI::DEFAULT_PARSER.make_regexp }
-  validates :title, presence: true
   validates :version, presence: true, numericality: { greater_than: 0 }
   
   # Versioning scopes
@@ -11,18 +10,18 @@ class Article < ApplicationRecord
   scope :versions, -> { order(:version) }
   scope :for_url, ->(url) { where(url: url) }
   
-  # Default scope: only show current articles
+  # Default scope: only show current scrapes
   default_scope { current }
   
-  # Original scopes (now apply to current articles only by default)
+  # Original scopes (now apply to current scrapes only by default)
   scope :recent, -> { order(fetched_at: :desc) }
   scope :by_source, ->(source) { where(source: source) }
   scope :today, -> { where(fetched_at: Date.current.all_day) }
   
   before_validation :set_fetched_at, if: -> { fetched_at.nil? }
   
-  def display_title
-    title.present? ? title.truncate(80) : url
+  def display_name
+    "Scrape #{id} - #{url}"
   end
   
   def content_summary(limit = 200)
@@ -50,7 +49,7 @@ class Article < ApplicationRecord
     source&.domain
   end
   
-  # Check if article content needs to be refreshed
+  # Check if scrape content needs to be refreshed
   def stale?(hours = 24)
     fetched_at < hours.hours.ago
   end
@@ -61,20 +60,20 @@ class Article < ApplicationRecord
   end
   
   def next_version_number
-    max_version = Article.unscoped.where(url: url, source: source).maximum(:version) || 0
+    max_version = Scrape.unscoped.where(url: url, source: source).maximum(:version) || 0
     max_version + 1
   end
   
   def all_versions
-    Article.unscoped.where(url: url, source: source).versions
+    Scrape.unscoped.where(url: url, source: source).versions
   end
   
   def previous_version
-    Article.unscoped.where(url: url, source: source, version: version - 1).first
+    Scrape.unscoped.where(url: url, source: source, version: version - 1).first
   end
   
   def next_version
-    Article.unscoped.where(url: url, source: source, version: version + 1).first
+    Scrape.unscoped.where(url: url, source: source, version: version + 1).first
   end
   
   def current_version?

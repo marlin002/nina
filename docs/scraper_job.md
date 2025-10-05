@@ -1,6 +1,6 @@
 # SourceScraperJob Documentation
 
-The `SourceScraperJob` is a background job that fetches content from web sources, parses it, and stores it as articles in the database.
+The `SourceScraperJob` is a background job that fetches content from web sources, parses it, and stores it as scrapes in the database.
 
 ## Overview
 
@@ -21,28 +21,20 @@ The `SourceScraperJob` is a background job that fetches content from web sources
 
 ### HTML Parsing
 - Uses Nokogiri for HTML parsing
-- Attempts to find articles using common CSS selectors (in priority order):
-  - `.paragraph` elements (primary selector for AV.se and government sites)
-  - `article` elements
-  - `.post`, `.entry`, `.article` classes
-  - Swedish-specific selectors: `.nyhet`, `.artikel`, `.news-item`
-  - Elements with "post", "article", "entry", "news", "nyhet", "artikel", or "paragraph" in class names
-  - RSS/XML `item` elements
-- Falls back to treating entire page as single article if no articles found
+- Looks specifically for `.provision` elements (legal/regulatory content)
+- Extracts only the provision element and its children
+- Skips pages that don't contain `.provision` elements
 - Handles Swedish characters (å, ä, ö) correctly in UTF-8
 
 ### Content Extraction
-- **Title**: Extracts from `h1`, `h2`, `h3`, `.title`, or similar elements
 - **URL**: Resolves relative URLs to absolute URLs
-- **Content Filtering**: Prioritizes `.provision` div content when present (for regulatory/legal documents)
-  - If `.provision` div exists within article: extracts only that content and its children
-  - If no `.provision` div: extracts full article content
-- **Raw HTML**: Stores the filtered HTML content
+- **Content Source**: Uses the `.provision` element and all its children
+- **Raw HTML**: Stores the complete provision HTML content
 - **Plain Text**: Cleaned text with scripts/styles removed and whitespace normalized
 
-### Article Storage
-- Creates new Article records for new content
-- Updates existing articles if content has changed
+### Scrape Storage
+- Creates new Scrape records for new content
+- Updates existing scrapes if content has changed
 - Prevents duplicates based on URL and source
 - Sets `fetched_at` timestamp automatically
 - Handles validation errors gracefully
@@ -84,16 +76,16 @@ source = Source.create!(
 
 ## Example Output
 
-The job processes a source and creates articles like this:
+The job processes a source and creates scrapes like this:
 
 ```ruby
 # Input: https://example.com/blog
 # Output: 
-source.articles.each do |article|
-  puts "Title: #{article.title}"
-  puts "URL: #{article.url}"
-  puts "Word Count: #{article.word_count}"
-  puts "Content: #{article.content_summary}"
+source.scrapes.each do |scrape|
+  puts "Title: #{scrape.title}"
+  puts "URL: #{scrape.url}"
+  puts "Word Count: #{scrape.word_count}"
+  puts "Content: #{scrape.content_summary}"
 end
 ```
 
@@ -114,7 +106,7 @@ end
 
 ### Logging
 - Start/completion messages at INFO level
-- Individual article creation/updates at INFO level
+- Individual scrape creation/updates at INFO level
 - Validation warnings at WARN level
 - Full errors with backtrace at ERROR level
 
@@ -138,7 +130,7 @@ GoodJob::Job.where(job_class: 'SourceScraperJob', finished_at: nil)
 - Jobs run in the `:scraping` queue
 - Timeout configured per source (default 30s)
 - Memory usage scales with HTML content size
-- Uses database transactions for article storage
+- Uses database transactions for scrape storage
 - Handles duplicate detection efficiently with database queries
 
 ## Testing
@@ -148,7 +140,7 @@ The job includes comprehensive error handling and can be tested with mock HTML c
 ```ruby
 # Test parsing logic
 scraper = SourceScraperJob.new
-articles = scraper.send(:parse_content, html_string, base_url)
+scrapes = scraper.send(:parse_content, html_string, base_url)
 
 # Test with real source
 source = Source.create!(url: "https://httpbin.org/html")
