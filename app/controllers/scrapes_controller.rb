@@ -18,6 +18,59 @@ class ScrapesController < ApplicationController
     }
   end
 
+  def search
+    @query = params[:q].to_s.strip
+    @context = params[:context].to_i
+    @context = 50 if @context <= 0 || @context > 200
+
+    @results = []
+
+    if @query.present?
+      # Escape % and _ for ILIKE
+      escaped = @query.gsub('%', '\\%').gsub('_', '\\_')
+      scrapes = Scrape.joins(:source).includes(:source)
+                      .where("plain_text ILIKE ?", "%#{escaped}%")
+
+      pattern = Regexp.new(Regexp.escape(@query), Regexp::IGNORECASE)
+
+      scrapes.find_each do |scrape|
+        text = scrape.plain_text.to_s
+        next if text.empty?
+
+        reg_num = regulation_number(scrape.source.url)
+
+        text.to_enum(:scan, pattern).each do
+          md = Regexp.last_match
+          start_i, end_i = md.begin(0), md.end(0)
+
+          lead_i = [start_i - @context, 0].max
+          trail_i = [end_i + @context, text.length].min
+
+          leading = text[lead_i...start_i]
+          match_text = text[start_i...end_i]
+          trailing = text[end_i...trail_i]
+
+          snippet_text = "#{leading}#{match_text}#{trailing}".strip
+
+          @results << {
+            snippet_text: snippet_text,
+            leading: leading,
+            match: match_text,
+            trailing: trailing,
+            regulation: regulation_name(scrape.source.url),
+            subject: regulation_title_subject(scrape.title),
+            scrape: scrape,
+            reg_num: reg_num,
+            position: start_i
+          }
+        end
+      end
+
+      # Sort by regulation number ascending, then by order of appearance within the text
+      @results.sort_by! { |r| [r[:reg_num], r[:position]] }
+    end
+  end
+
   def raw
     @scrape = Scrape.find(params[:id])
     

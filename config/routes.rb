@@ -11,6 +11,9 @@ Rails.application.routes.draw do
 
   # Scrapes routes
   resources :scrapes, only: [:index] do
+    collection do
+      get :search
+    end
     member do
       get :raw
     end
