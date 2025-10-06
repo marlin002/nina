@@ -88,31 +88,20 @@ class SourceScraperJob < ApplicationJob
   end
   
   def extract_scrape_data(element, base_url)
-    # Extract content URL (prefer links within the element, fallback to base_url)
-    content_url = extract_content_url(element, base_url)
+    # Use the source's configured URL, not content links
+    # This ensures each source scrapes its intended URL
     
     # Extract content from the provision element and its children
     raw_html = element.to_html
     plain_text = extract_plain_text(element)
     
     {
-      url: content_url,
+      url: base_url,  # Use source's configured URL
       raw_html: raw_html,
       plain_text: plain_text.strip
     }
   end
   
-  def extract_content_url(element, base_url)
-    # Look for links within the content
-    link = element.at_css('a[href]')
-    if link
-      href = link['href']
-      return resolve_url(href, base_url) if href.present?
-    end
-    
-    # Fallback to base URL
-    base_url
-  end
   
   def extract_plain_text(element)
     # Remove script and style elements
@@ -126,23 +115,6 @@ class SourceScraperJob < ApplicationJob
     text.gsub(/\s+/, ' ').strip
   end
   
-  def resolve_url(url, base_url)
-    return url if url =~ /^https?:\/\//
-    
-    base_uri = URI.parse(base_url)
-    
-    if url.start_with?('/')
-      # Absolute path
-      "#{base_uri.scheme}://#{base_uri.host}#{url}"
-    else
-      # Relative path
-      base_path = File.dirname(base_uri.path)
-      base_path = '/' if base_path == '.'
-      "#{base_uri.scheme}://#{base_uri.host}#{base_path}/#{url}"
-    end
-  rescue URI::InvalidURIError
-    base_url
-  end
   
   def store_scrapes(scrapes_data)
     scrapes_data.each do |scrape_data|
