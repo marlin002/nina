@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raw Content - Nina</title>
+  <style>
+    body {
+      font-family: Georgia, serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+      background: #ffffff;
+    }
+    .provision {
+      margin: 20px 0;
+      padding: 15px;
+      border-left: 4px solid #007acc;
+      background: #f8f9fa;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      color: #2c3e50;
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+    }
+    p {
+      margin: 1em 0;
+    }
+    ol, ul {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .nav-hint {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav-hint">Close tab to return to Nina</div>
+  <%= yield %>
+</body>
+</html>
