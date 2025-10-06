@@ -29,13 +29,13 @@
 
 <div class="regulation-grid">
   <% @scrapes.each do |scrape| %>
-    <% regulation_num = scrape.source.url.match(/afs-2023(\d+)/)&.[](1) || "?" %>
     <div class="regulation-card">
       <div class="regulation-header">
-        <h3>AFS 2023:<%= regulation_num %></h3>
+        <h3><%= regulation_name(scrape.source.url) %></h3>
         <div class="regulation-stats">
           <span class="stat">📄 <%= number_to_human_size(scrape.raw_html&.length || 0) %></span>
           <span class="stat">📝 <%= number_to_human_size(scrape.plain_text&.length || 0) %></span>
+          <span class="stat">📋 <%= article_count(scrape.raw_html) %> articles</span>
         </div>
       </div>
       
@@ -45,16 +45,21 @@
         </div>
       </div>
       
+      <div class="regulation-subject">
+        <p class="subject-text">
+          <%= regulation_title_subject(scrape.title) %>
+        </p>
+      </div>
+      
       <div class="regulation-preview">
         <p><strong>Preview:</strong></p>
         <p class="preview-text">
-          <%= truncate(scrape.plain_text&.strip, length: 150) %>
+          <%= section_preview(scrape.raw_html, 200) %>
         </p>
       </div>
       
       <div class="regulation-actions">
-        <%= link_to "View Details", scrape_path(scrape), class: "btn btn-primary" %>
-        <%= link_to "Raw HTML", raw_scrape_path(scrape), class: "btn btn-secondary", target: "_blank" %>
+        <%= link_to "View", raw_scrape_path(scrape), class: "btn btn-primary", target: "_blank" %>
         <%= link_to "Source", scrape.source.url, class: "btn btn-outline", target: "_blank" %>
       </div>
     </div>

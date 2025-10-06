@@ -16,11 +16,14 @@ class SourceScraperJob < ApplicationJob
     
     Rails.logger.info "Starting scrape for source: #{@source.url}"
     
-    # Fetch the HTML content
-    html_content = fetch_content(@source.url)
+    # Fetch the HTML content from source page
+    source_html = fetch_content(@source.url)
+    
+    # Extract title from source page
+    regulation_title = extract_regulation_title(source_html)
     
     # Parse the HTML and extract scrapes
-    scrapes_data = parse_content(html_content, @source.url)
+    scrapes_data = parse_content(source_html, @source.url, regulation_title)
     
     # Store the scrapes
     store_scrapes(scrapes_data)
@@ -65,7 +68,7 @@ class SourceScraperJob < ApplicationJob
     response.body
   end
   
-  def parse_content(html_content, base_url)
+  def parse_content(html_content, base_url, regulation_title = nil)
     doc = Nokogiri::HTML(html_content)
     scrapes = []
     
@@ -73,7 +76,7 @@ class SourceScraperJob < ApplicationJob
     provision_element = doc.at_css('.provision')
     
     if provision_element
-      scrape_data = extract_scrape_data(provision_element, base_url)
+      scrape_data = extract_scrape_data(provision_element, base_url, regulation_title)
       if scrape_data
         scrapes << scrape_data
         Rails.logger.info "Found .provision content (#{scrape_data[:raw_html].length} chars)"
@@ -87,7 +90,7 @@ class SourceScraperJob < ApplicationJob
     scrapes
   end
   
-  def extract_scrape_data(element, base_url)
+  def extract_scrape_data(element, base_url, regulation_title = nil)
     # Use the source's configured URL, not content links
     # This ensures each source scrapes its intended URL
     
@@ -98,10 +101,36 @@ class SourceScraperJob < ApplicationJob
     {
       url: base_url,  # Use source's configured URL
       raw_html: raw_html,
-      plain_text: plain_text.strip
+      plain_text: plain_text.strip,
+      title: regulation_title
     }
   end
   
+  def extract_regulation_title(html_content)
+    begin
+      doc = Nokogiri::HTML(html_content)
+      title_element = doc.at_css('title')
+      
+      if title_element
+        title_text = title_element.text.strip
+        # Remove the trailing site name if present
+        title_text = title_text.gsub(/, föreskrifter - Arbetsmiljöverket$/, '')
+        # Decode HTML entities
+        title_text = CGI.unescapeHTML(title_text)
+        
+        # Validate that it looks like a proper regulation title
+        if title_text.match?(/AFS\s+\d{4}:\d+/)
+          return title_text
+        end
+      end
+      
+      Rails.logger.warn "Could not extract regulation title from page"
+      return nil
+    rescue => e
+      Rails.logger.warn "Error extracting regulation title: #{e.message}"
+      return nil
+    end
+  end
   
   def extract_plain_text(element)
     # Remove script and style elements
@@ -134,6 +163,7 @@ class SourceScraperJob < ApplicationJob
               url: scrape_data[:url],
               raw_html: scrape_data[:raw_html],
               plain_text: scrape_data[:plain_text],
+              title: scrape_data[:title],
               source: @source,
               fetched_at: Time.current,
               version: existing_scrape.next_version_number,
@@ -149,6 +179,7 @@ class SourceScraperJob < ApplicationJob
             url: scrape_data[:url],
             raw_html: scrape_data[:raw_html],
             plain_text: scrape_data[:plain_text],
+            title: scrape_data[:title],
             source: @source,
             fetched_at: Time.current,
             version: 1,

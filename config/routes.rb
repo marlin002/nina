@@ -10,7 +10,7 @@ Rails.application.routes.draw do
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
 
   # Scrapes routes
-  resources :scrapes, only: [:index, :show] do
+  resources :scrapes, only: [:index] do
     member do
       get :raw
     end
