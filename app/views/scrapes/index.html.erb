@@ -17,6 +17,10 @@
       <span class="stat-label">Regulations</span>
     </div>
     <div class="stat-item">
+      <span class="stat-number"><%= @stats[:total_articles] %></span>
+      <span class="stat-label">Articles</span>
+    </div>
+    <div class="stat-item">
       <span class="stat-number"><%= number_to_human_size(@stats[:total_html_size]) %></span>
       <span class="stat-label">HTML Content</span>
     </div>
@@ -33,17 +37,10 @@
       <div class="regulation-header">
         <h3><%= regulation_name(scrape.source.url) %></h3>
         <div class="regulation-stats">
-          <span class="stat">📄 <%= number_to_human_size(scrape.raw_html&.length || 0) %></span>
-          <span class="stat">📝 <%= number_to_human_size(scrape.plain_text&.length || 0) %></span>
           <span class="stat">📋 <%= article_count(scrape.raw_html) %> articles</span>
         </div>
       </div>
       
-      <div class="regulation-meta">
-        <div class="scrape-time">
-          🕒 Scraped: <%= scrape.fetched_at&.strftime("%m-%d %H:%M") %>
-        </div>
-      </div>
       
       <div class="regulation-subject">
         <p class="subject-text">

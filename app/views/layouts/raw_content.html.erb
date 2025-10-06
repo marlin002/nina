@@ -55,10 +55,75 @@
       font-size: 12px;
       z-index: 1000;
     }
+    .regulation-header {
+      background: #f8f9fa;
+      padding: 20px;
+      margin-bottom: 30px;
+      border-radius: 8px;
+      border-left: 4px solid #007acc;
+    }
+    .regulation-header h1 {
+      color: #2c3e50;
+      margin: 0 0 10px 0;
+      font-size: 1.8em;
+      font-weight: 600;
+    }
+    .regulation-subject {
+      color: #495057;
+      margin: 0 0 15px 0;
+      font-size: 1.2em;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+    .regulation-meta {
+      display: flex;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+    .meta-item {
+      font-size: 0.9em;
+    }
+    .meta-item .label {
+      color: #6c757d;
+      font-weight: 500;
+    }
+    .meta-item .value {
+      color: #495057;
+      margin-left: 5px;
+    }
+    .source-link {
+      color: #007acc;
+      text-decoration: none;
+    }
+    .source-link:hover {
+      text-decoration: underline;
+    }
+    .regulation-content {
+      /* Add some spacing from header */
+    }
   </style>
 </head>
 <body>
   <div class="nav-hint">Close tab to return to regulation list</div>
-  <%= yield %>
+  
+  <div class="regulation-header">
+    <h1><%= @regulation_name %></h1>
+    <h2 class="regulation-subject"><%= @regulation_title %></h2>
+    
+    <div class="regulation-meta">
+      <div class="meta-item">
+        <span class="label">Articles:</span>
+        <span class="value"><%= @article_count %></span>
+      </div>
+      <div class="meta-item">
+        <span class="label">Source:</span>
+        <span class="value"><a href="<%= @source_url %>" target="_blank" class="source-link">View on AV.se</a></span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="regulation-content">
+    <%= yield %>
+  </div>
 </body>
 </html>

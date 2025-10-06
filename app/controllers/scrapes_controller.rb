@@ -1,4 +1,6 @@
 class ScrapesController < ApplicationController
+  include ApplicationHelper
+  
   def index
     scrapes_unsorted = Scrape.joins(:source).includes(:source)
     
@@ -11,12 +13,20 @@ class ScrapesController < ApplicationController
       total_scrapes: scrapes_unsorted.count,
       total_html_size: scrapes_unsorted.sum { |s| s.raw_html&.length || 0 },
       total_text_size: scrapes_unsorted.sum { |s| s.plain_text&.length || 0 },
+      total_articles: scrapes_unsorted.sum { |s| article_count(s.raw_html) },
       last_updated: scrapes_unsorted.maximum(:fetched_at)
     }
   end
 
   def raw
     @scrape = Scrape.find(params[:id])
+    
+    # Set content for layout
+    @regulation_name = regulation_name(@scrape.source.url)
+    @regulation_title = regulation_title_subject(@scrape.title)
+    @source_url = @scrape.source.url
+    @article_count = article_count(@scrape.raw_html)
+    
     render html: @scrape.raw_html.html_safe, layout: 'raw_content'
   rescue ActiveRecord::RecordNotFound
     redirect_to scrapes_path, alert: 'Scrape not found'

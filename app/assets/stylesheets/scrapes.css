@@ -95,17 +95,10 @@
   gap: 0.25rem;
   font-size: 0.8rem;
   text-align: right;
-  min-width: 120px; /* Accommodate HTML size, text size, and article count */
+  min-width: 80px; /* Accommodate article count */
 }
 
 .regulation-stats .stat {
-  color: #6c757d;
-}
-
-.regulation-meta {
-  padding: 0.75rem 1.5rem;
-  background: #ffffff;
-  font-size: 0.85rem;
   color: #6c757d;
 }
 
