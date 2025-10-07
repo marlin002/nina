@@ -28,7 +28,7 @@ regulation_urls = [
 standard_settings = {
   enabled: true,
   timeout: 30,
-  user_agent: "Nina Swedish Content Scraper 1.0",
+  user_agent: "Benina Swedish Content Scraper 1.0",
   language: "sv-SE",
   scrape_frequency: "weekly",  # Regulations don't change frequently
   source_type: "government_regulation"

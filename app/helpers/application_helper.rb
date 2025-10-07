@@ -75,6 +75,20 @@ module ApplicationHelper
       0
     end
   end
+
+  # Count the number of general recommendations in HTML content
+  # Counts div.general-recommendation elements
+  def general_recommendation_count(raw_html)
+    return 0 if raw_html.blank?
+
+    begin
+      doc = Nokogiri::HTML(raw_html)
+      doc.css('div.general-recommendation').length
+    rescue => e
+      Rails.logger.warn "Error counting general recommendations: #{e.message}"
+      0
+    end
+  end
   
   # Extract regulation subject/topic from HTML content
   # Looks for meaningful headings or contextual clues about the regulation's purpose

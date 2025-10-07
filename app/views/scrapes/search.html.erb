@@ -1,43 +1,29 @@
-<% content_for :title, "Nina - Search" %>
+<% content_for :title, "Benina" %>
 
 <div class="scrapes-header">
-  <%= link_to "← Home", root_path, class: "back-link" %>
-  <h1>🔎 Search Articles</h1>
-  <p class="subtitle">Find matches in plain text across AFS 2023 regulations.</p>
-</div>
+  <h1><%= link_to "Benina", root_path, class: "home-link" %></h1>
+  <p class="subtitle">
+    Sök enkelt i alla AFSar!
+  </p>
 
-<div class="search-bar">
-  <%= form_with url: search_scrapes_path, method: :get, local: true, class: "search-form" do %>
-    <div class="form-row">
-      <div class="form-group">
-        <label for="q">Search query</label>
-        <%= text_field_tag :q, @query, placeholder: "Enter keywords (e.g., riskbedömning)", class: "input-text" %>
-      </div>
-      <div class="form-group small">
-        <label for="context">Context</label>
-        <%= number_field_tag :context, @context || 50, in: 10..200, step: 10, class: "input-number" %>
-      </div>
-      <div class="form-actions">
-        <%= submit_tag "Search", class: "btn btn-primary" %>
-      </div>
-    </div>
-  <% end %>
-  <p class="refine-hint">Tip: refine the search by adjusting the query or context and pressing Search again.</p>
+  <div class="search-inline">
+    <%= form_with url: search_scrapes_path, method: :get, local: true, class: "search-form" do %>
+      <%= text_field_tag :q, @query, placeholder: "Sök paragrafer (ren text)", class: "input-text" %>
+      <%= number_field_tag :context, @context || 50, in: 10..200, step: 10, class: "input-number", title: "Sammanhang" %>
+      <%= submit_tag "Sök", class: "btn btn-primary" %>
+    <% end %>
+  </div>
 </div>
 
 <% if @query.present? %>
-  <div class="search-summary">
-    <p><strong>Query:</strong> <%= h(@query) %></p>
-    <p><strong>Results:</strong> <%= @results.length %> match<%= 'es' unless @results.length == 1 %></p>
-  </div>
 
   <div class="search-results">
     <% if @results.any? %>
       <table class="results-table">
         <thead>
           <tr>
-            <th>Match</th>
-            <th>Regulation</th>
+            <th>Resultat: <%= @results.length %> träff<%= @results.length == 1 ? '' : 'ar' %></th>
+            <th>Föreskrift</th>
           </tr>
         </thead>
         <tbody>
@@ -60,14 +46,14 @@
       </table>
     <% else %>
       <div class="empty-state">
-        <h3>No matches found</h3>
-        <p>Try refining your search query or increasing the context.</p>
+        <h3>Inga träffar</h3>
+        <p>Försök förfina sökfrågan eller öka sammanhanget.</p>
       </div>
     <% end %>
   </div>
 <% else %>
   <div class="empty-state">
-    <h3>Start by searching</h3>
-    <p>Enter a keyword or phrase to find matches across AFS 2023 Articles.</p>
+    <h3>Börja med att söka</h3>
+    <p>Ange ett sökord eller en fras för att hitta träffar i AFS 2023 paragrafer.</p>
   </div>
 <% end %>

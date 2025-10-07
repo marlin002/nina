@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nina - Content Viewer</title>
+  <title>Benina</title>
   <style>
     body {
       font-family: Georgia, serif;
@@ -104,7 +104,7 @@
   </style>
 </head>
 <body>
-  <div class="nav-hint">Close tab to return to regulation list</div>
+  <div class="nav-hint">Stäng fliken för att återgå till listan</div>
   
   <div class="regulation-header">
     <h1><%= @regulation_name %></h1>
@@ -112,12 +112,16 @@
     
     <div class="regulation-meta">
       <div class="meta-item">
-        <span class="label">Articles:</span>
+        <span class="label">Paragrafer:</span>
         <span class="value"><%= @article_count %></span>
       </div>
       <div class="meta-item">
-        <span class="label">Source:</span>
-        <span class="value"><a href="<%= @source_url %>" target="_blank" class="source-link">View on AV.se</a></span>
+        <span class="label">Allmänna råd:</span>
+        <span class="value"><%= @general_recommendation_count %></span>
+      </div>
+      <div class="meta-item">
+        <span class="label">Källa:</span>
+        <span class="value"><a href="<%= @source_url %>" target="_blank" class="source-link">Visa på AV.se</a></span>
       </div>
     </div>
   </div>

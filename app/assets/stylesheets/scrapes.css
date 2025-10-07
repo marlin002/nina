@@ -1,16 +1,25 @@
-/* Nina Content Viewer Styles */
+/* Benina Content Viewer Styles */
 .scrapes-header {
   background: #2c3e50;
   color: white;
   padding: 2rem;
   border-radius: 8px;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .scrapes-header h1 {
   margin: 0 0 0.5rem 0;
   font-size: 2rem;
   font-weight: 600;
+}
+
+.scrapes-header h1 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.scrapes-header h1 a:hover {
+  text-decoration: underline;
 }
 
 .scrapes-header .subtitle {
@@ -20,7 +29,7 @@
 }
 
 .scrapes-header .last-updated {
-  margin: 0 0 1.5rem 0;
+  margin: 1.25rem 0 0.5rem 0; /* more space above, less below */
   font-size: 0.9rem;
   opacity: 0.8;
 }
