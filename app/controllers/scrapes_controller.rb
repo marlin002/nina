@@ -13,6 +13,7 @@ class ScrapesController < ApplicationController
       total_scrapes: scrapes_unsorted.count,
       total_articles: scrapes_unsorted.sum { |s| article_count(s.raw_html) },
       total_general_recommendations: scrapes_unsorted.sum { |s| general_recommendation_count(s.raw_html) },
+      total_appendices: scrapes_unsorted.sum { |s| appendix_count(s.raw_html) },
       last_updated: scrapes_unsorted.maximum(:fetched_at)
     }
   end
@@ -79,6 +80,7 @@ class ScrapesController < ApplicationController
     @source_url = @scrape.source.url
     @article_count = article_count(@scrape.raw_html)
     @general_recommendation_count = general_recommendation_count(@scrape.raw_html)
+    @appendix_count = appendix_count(@scrape.raw_html)
     
     render html: @scrape.raw_html.html_safe, layout: 'raw_content'
   rescue ActiveRecord::RecordNotFound

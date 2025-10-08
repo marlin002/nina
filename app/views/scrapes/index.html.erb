@@ -27,6 +27,10 @@
       <span class="stat-number"><%= @stats[:total_general_recommendations] %></span>
       <span class="stat-label">Allmänna råd</span>
     </div>
+    <div class="stat-item">
+      <span class="stat-number"><%= @stats[:total_appendices] %></span>
+      <span class="stat-label">Bilagor</span>
+    </div>
   </div>
   <% if @stats[:last_updated] %>
     <p class="last-updated">
@@ -43,6 +47,7 @@
         <div class="regulation-stats">
           <span class="stat">📋 <%= article_count(scrape.raw_html) %> paragrafer</span>
           <span class="stat">💡 <%= general_recommendation_count(scrape.raw_html) %> allmänna råd</span>
+          <span class="stat">📎 <%= appendix_count(scrape.raw_html) %> bilagor</span>
         </div>
       </div>
       

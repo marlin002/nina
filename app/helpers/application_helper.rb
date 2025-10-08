@@ -89,6 +89,20 @@ module ApplicationHelper
       0
     end
   end
+
+  # Count the number of appendices in HTML content
+  # Looks for h2 elements with an id that starts with "bilaga" (case-insensitive)
+  def appendix_count(raw_html)
+    return 0 if raw_html.blank?
+
+    begin
+      doc = Nokogiri::HTML(raw_html)
+      doc.css('h2[id]').count { |h| h['id'].to_s.downcase.start_with?('bilaga') }
+    rescue => e
+      Rails.logger.warn "Error counting appendices: #{e.message}"
+      0
+    end
+  end
   
   # Extract regulation subject/topic from HTML content
   # Looks for meaningful headings or contextual clues about the regulation's purpose
