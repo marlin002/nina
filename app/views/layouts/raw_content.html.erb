@@ -101,6 +101,26 @@
     .regulation-content {
       /* Add some spacing from header */
     }
+
+    /* Smooth scroll to anchors */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Highlight the element that is the current :target */
+    :target {
+      outline: 2px solid #ffcc00;
+      background-color: #fff8d1;
+    }
+
+    /* Flash animation for anchored element */
+    @keyframes flash-bg {
+      0% { background-color: #fff3bf; }
+      100% { background-color: transparent; }
+    }
+    .flash-highlight {
+      animation: flash-bg 2s ease-out 1;
+    }
   </style>
 </head>
 <body>
@@ -133,5 +153,27 @@
   <div class="regulation-content">
     <%= yield %>
   </div>
+
+  <script>
+    (function() {
+      function flashTarget() {
+        try {
+          var hash = decodeURIComponent(window.location.hash || '').replace(/^#/, '');
+          if (!hash) return;
+          var el = document.getElementById(hash);
+          if (!el) return;
+          el.classList.add('flash-highlight');
+          setTimeout(function(){ el.classList.remove('flash-highlight'); }, 2200);
+        } catch (e) { /* noop */ }
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', flashTarget);
+      } else {
+        flashTarget();
+      }
+      // Also flash when navigating between anchors on the same page
+      window.addEventListener('hashchange', flashTarget);
+    })();
+  </script>
 </body>
 </html>

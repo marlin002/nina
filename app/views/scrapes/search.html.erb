@@ -9,7 +9,6 @@
   <div class="search-inline">
     <%= form_with url: search_scrapes_path, method: :get, local: true, class: "search-form" do %>
       <%= text_field_tag :q, @query, placeholder: "Sök paragrafer (ren text)", class: "input-text" %>
-      <%= number_field_tag :context, @context || 50, in: 10..200, step: 10, class: "input-number", title: "Sammanhang" %>
       <%= submit_tag "Sök", class: "btn btn-primary" %>
     <% end %>
   </div>
@@ -21,24 +20,32 @@
     <% if @results.any? %>
       <table class="results-table">
         <thead>
+          <% current_sort = params[:sort].presence || 'reg' %>
+          <% current_dir = params[:dir].presence || 'asc' %>
+          <% next_dir_reg = (current_sort == 'reg' && current_dir == 'asc') ? 'desc' : 'asc' %>
+          <% next_dir_text = (current_sort == 'text' && current_dir == 'asc') ? 'desc' : 'asc' %>
           <tr>
-            <th>Resultat: <%= @results.length %> träff<%= @results.length == 1 ? '' : 'ar' %></th>
-            <th>Föreskrift</th>
+            <th>
+              <%= link_to search_scrapes_path(q: @query, sort: 'text', dir: next_dir_text), class: "sort-link" do %>
+                Resultat <%= current_sort == 'text' ? (current_dir == 'asc' ? '↑' : '↓') : '' %>
+              <% end %>
+              : <%= @results.length %> träff<%= @results.length == 1 ? '' : 'ar' %>
+            </th>
+            <th>
+              <%= link_to search_scrapes_path(q: @query, sort: 'reg', dir: next_dir_reg), class: "sort-link" do %>
+                Föreskrift <%= current_sort == 'reg' ? (current_dir == 'asc' ? '↑' : '↓') : '' %>
+              <% end %>
+            </th>
           </tr>
         </thead>
         <tbody>
           <% @results.each do |res| %>
             <tr>
               <td class="match-snippet">
-                <%# Highlight the matched text within the snippet %>
-                <% highlighted = ''.html_safe %>
-                <% highlighted << h(res[:leading]) %>
-                <% highlighted << content_tag(:mark, h(res[:match])) %>
-                <% highlighted << h(res[:trailing]) %>
-                <p><%= highlighted %></p>
+                <p><%= highlight_matches(collapse_whitespace(res[:element_text]), @query) %></p>
               </td>
               <td class="regulation-cell">
-                <%= link_to res[:regulation], raw_scrape_path(res[:scrape]), class: "regulation-link", target: "_blank" %>
+                <%= link_to(res[:display_label].presence || res[:regulation], raw_scrape_path(res[:scrape], q: @query, anchor: res[:element_id]), class: "regulation-link", target: "_blank") %>
               </td>
             </tr>
           <% end %>
@@ -47,7 +54,7 @@
     <% else %>
       <div class="empty-state">
         <h3>Inga träffar</h3>
-        <p>Försök förfina sökfrågan eller öka sammanhanget.</p>
+        <p>Försök förfina sökfrågan.</p>
       </div>
     <% end %>
   </div>

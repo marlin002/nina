@@ -175,4 +175,228 @@ module ApplicationHelper
     # Remove the (AFS 2023:X) part from the end
     title.gsub(/\s*\(AFS\s+\d{4}:\d+\)\s*$/, '').strip
   end
+
+  # Normalize NBSP to regular spaces
+  def normalize_nbsp_spaces(str)
+    str.to_s.tr("\u00A0", ' ')
+  end
+
+  # Collapse runs of whitespace (including NBSP) to single spaces and strip ends
+  def collapse_whitespace(str)
+    normalize_nbsp_spaces(str).gsub(/[\s\u00A0]+/, ' ').strip
+  end
+
+  # Highlight occurrences of query in text, returning safe HTML with <mark> tags.
+  # Treat spaces in the query as matching both regular spaces and NBSP in the text.
+  def highlight_matches(text, query)
+    return h(text.to_s) if text.blank? || query.blank?
+
+    # Build a flexible regex: spaces in query become [\s\u00A0]+ to match NBSP and spaces in content
+    q = normalize_nbsp_spaces(query.to_s).strip
+    escaped = Regexp.escape(q)
+    flex = escaped.gsub(/\s+/, '[\s\u00A0]+')
+    pattern = Regexp.new(flex, Regexp::IGNORECASE)
+
+    str = text.to_s
+    result = +''
+    last_idx = 0
+
+    str.to_enum(:scan, pattern).each do
+      m = Regexp.last_match
+      result << ERB::Util.html_escape(str[last_idx...m.begin(0)])
+      # Avoid content_tag here so this helper works from controller context too
+      result << "<mark>#{ERB::Util.html_escape(m[0])}</mark>"
+      last_idx = m.end(0)
+    end
+    result << ERB::Util.html_escape(str[last_idx..-1])
+
+    result.html_safe
+  end
+
+  # Assign synthetic ids to all elements with inner text that lack an id, in document order.
+  # Returns the same fragment/doc after mutation. IDs are in the form "benina-n-<sequence>".
+  def assign_synthetic_ids!(fragment)
+    seq = 0
+    fragment.css('*').each do |node|
+      # Faster check for presence of any non-whitespace text in subtree
+      has_text = node.xpath('.//text()[normalize-space()]').any?
+      next unless has_text
+      if node['id'].to_s.strip.empty?
+        node['id'] = "benina-n-#{seq}"
+        seq += 1
+      end
+    end
+    fragment
+  end
+
+  # Highlight all matches for the query across the entire fragment by wrapping in <mark>.
+  # Skips script and style tags.
+  def highlight_all_matches_in_fragment!(fragment, query)
+    return fragment if query.blank?
+    pattern = Regexp.new(Regexp.escape(query.to_s), Regexp::IGNORECASE)
+
+    fragment.traverse do |node|
+      next unless node.text?
+      parent = node.parent
+      next if parent.nil?
+      tag = parent.name&.downcase
+      next if tag == 'script' || tag == 'style'
+
+      original = node.text
+      next unless original.match?(pattern)
+
+      highlighted_html = highlight_matches(original, query)
+      replacement = Nokogiri::HTML::DocumentFragment.parse(highlighted_html)
+      node.replace(replacement)
+    end
+
+    fragment
+  end
+
+  # Produce enriched HTML for the raw view: ensure synthetic IDs exist and optionally highlight matches
+  # in the entire fragment.
+  def enrich_html_with_ids_and_highlights(raw_html, query = nil)
+    return raw_html.to_s if raw_html.blank?
+    fragment = Nokogiri::HTML::DocumentFragment.parse(raw_html.to_s)
+    assign_synthetic_ids!(fragment)
+    highlight_all_matches_in_fragment!(fragment, query)
+    fragment.to_html
+  end
+
+  # Build a context index for a fragment mapping element id => { kap:, paragraf:, bilaga: }
+  # Uses the following heuristics (NBSP-aware):
+  # - "X kap." from h3 text beginning with "X kap." or "X kapitel"
+  # - "X §" from span.section-sign text (e.g., "1 §")
+  # - "Bilaga X" from h2 id starting with "bilagaX..." or h2 text beginning with "Bilaga X"
+  def extract_context_index(fragment)
+    index = {}
+    current_kap = nil
+    current_par = nil
+    current_bilaga = nil
+
+    fragment.traverse do |node|
+      next unless node.element?
+      tag = node.name.to_s.downcase
+
+      if tag == 'h3'
+        txt = collapse_whitespace(node.text)
+        if (m = txt.match(/\A(\d+)\s*(?:kap\.|kapitel)/i))
+          current_kap = m[1].to_i
+        end
+      elsif tag == 'span' && node['class'].to_s.split(' ').include?('section-sign')
+        txt = normalize_nbsp_spaces(node.text)
+        if (m = txt.match(/\A\s*(\d+)\s*§\b/))
+          current_par = m[1].to_i
+        end
+      elsif tag == 'h2'
+        id = node['id'].to_s
+        # Capture only the leading digits after 'bilaga', ignore any trailing slug text
+        if (m = id.downcase.match(/\Abilaga(\d+)/))
+          current_bilaga = m[1].to_i
+        else
+          # NBSP-aware: allow Bilaga&nbsp;X
+          txt_raw = node.text.to_s
+          txt = normalize_nbsp_spaces(txt_raw)
+          if (m2 = txt.match(/\ABilaga[\s\u00A0]*(\d+)/i))
+            current_bilaga = m2[1].to_i
+          end
+        end
+      end
+
+      eid = node['id'].to_s
+      next if eid.strip.empty?
+      # Only record for elements that actually contain some text in subtree
+      has_text = node.xpath('.//text()[normalize-space()]').any?
+      next unless has_text
+
+      index[eid] = { kap: current_kap, paragraf: current_par, bilaga: current_bilaga }
+    end
+
+    index
+  end
+
+  # Format the context label in order: "# kap.; # §; Bilaga #"
+  def format_context_label(ctx)
+    return '' if ctx.nil?
+    parts = []
+    if ctx[:kap]
+      parts << "#{ctx[:kap]} kap."
+    end
+    if ctx[:paragraf]
+      parts << "#{ctx[:paragraf]} §"
+    end
+    if ctx[:bilaga]
+      parts << "Bilaga #{ctx[:bilaga]}"
+    end
+    parts.join('; ')
+  end
+
+  # Find the nearest paragraph number ("X §") relative to a node by inspecting
+  # the node itself, its previous siblings (and their descendants), and then
+  # walking up ancestors with a bounded search. NBSP-aware.
+  def find_nearest_paragraph_number(node, max_ancestor_hops = 12)
+    return nil if node.nil?
+
+    # Helper to parse number from a section-sign element or text
+    parse_from_sign = lambda do |sign_node|
+      return nil unless sign_node
+      txt = normalize_nbsp_spaces(sign_node.text)
+      if (m = txt.match(/\b(\d+)\s*§\b/))
+        return m[1].to_i
+      end
+      sid = sign_node['id'].to_s
+      if (m = sid.match(/(\d+)\s*§?/))
+        return m[1].to_i
+      end
+      nil
+    end
+
+    # Walk up ancestors; at each level, check within current, then previous siblings deeply
+    current = node
+    hops = 0
+    while current && hops <= max_ancestor_hops
+      # 1) Inside current node
+      sign = current.at_css('span.section-sign')
+      num = parse_from_sign.call(sign)
+      return num if num
+
+      # 2) Previous siblings at this level (search their subtree)
+      sib = current.previous_element
+      while sib
+        sign = sib.at_css('span.section-sign')
+        num = parse_from_sign.call(sign)
+        return num if num
+        # Generic fallback: sibling text contains a section-sign
+        t = normalize_nbsp_spaces(sib.text.to_s)
+        if (m = t.match(/\b(\d+)\s*§\b/))
+          return m[1].to_i
+        end
+        sib = sib.previous_element
+      end
+
+      current = current.parent
+      hops += 1
+    end
+
+    nil
+  end
+
+  # Compose the clickable regulation label according to rules:
+  # - Always start with regulation (e.g., "AFS 2023:11").
+  # - If bilaga is present, append "Bilaga X" and do not include kap/§.
+  # - Else, optionally append "X kap." and/or "Y §" in that order if present.
+  def compose_regulation_context(regulation, ctx)
+    return regulation.to_s if ctx.nil?
+
+    if ctx[:bilaga].present?
+      return "#{regulation} Bilaga #{ctx[:bilaga]}"
+    end
+
+    parts = []
+    parts << "#{ctx[:kap]} kap." if ctx[:kap]
+    parts << "#{ctx[:paragraf]} §" if ctx[:paragraf]
+    suffix = parts.join(' ')
+
+    suffix.blank? ? regulation.to_s : "#{regulation} #{suffix}"
+  end
 end

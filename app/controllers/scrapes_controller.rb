@@ -20,9 +20,6 @@ class ScrapesController < ApplicationController
 
   def search
     @query = params[:q].to_s.strip
-    @context = params[:context].to_i
-    @context = 50 if @context <= 0 || @context > 200
-
     @results = []
 
     if @query.present?
@@ -31,43 +28,82 @@ class ScrapesController < ApplicationController
       scrapes = Scrape.joins(:source).includes(:source)
                       .where("plain_text ILIKE ?", "%#{escaped}%")
 
-      pattern = Regexp.new(Regexp.escape(@query), Regexp::IGNORECASE)
+      # Spaces in the query should match both regular spaces and NBSP in content
+      q = normalize_nbsp_spaces(@query).strip
+      escaped = Regexp.escape(q)
+      flex = escaped.gsub(/\s+/, '[\s\u00A0]+')
+      pattern = Regexp.new(flex, Regexp::IGNORECASE)
 
       scrapes.find_each do |scrape|
-        text = scrape.plain_text.to_s
-        next if text.empty?
-
         reg_num = regulation_number(scrape.source.url)
+        begin
+          fragment = Nokogiri::HTML::DocumentFragment.parse(scrape.raw_html.to_s)
+          # Ensure deterministic synthetic ids so anchors work in raw view
+          assign_synthetic_ids!(fragment)
 
-        text.to_enum(:scan, pattern).each do
-          md = Regexp.last_match
-          start_i, end_i = md.begin(0), md.end(0)
+          # Build context index for this fragment
+          context_index = extract_context_index(fragment)
 
-          lead_i = [start_i - @context, 0].max
-          trail_i = [end_i + @context, text.length].min
+          seen = {}
+          # Traverse text nodes for precise, deep matches and dedup by nearest ancestor element with an id
+          fragment.traverse do |n|
+            next unless n.text?
+            t = n.text.to_s
+            next unless t.match?(pattern)
 
-          leading = text[lead_i...start_i]
-          match_text = text[start_i...end_i]
-          trailing = text[end_i...trail_i]
+            el = n.parent
+            next if el.nil?
+            # Bubble up to the nearest element with an id
+            target = el
+            while target && target['id'].to_s.strip.empty?
+              target = target.parent
+            end
+            next if target.nil?
 
-          snippet_text = "#{leading}#{match_text}#{trailing}".strip
+            eid = target['id']
+            next if seen[eid]
 
-          @results << {
-            snippet_text: snippet_text,
-            leading: leading,
-            match: match_text,
-            trailing: trailing,
-            regulation: regulation_name(scrape.source.url),
-            subject: regulation_title_subject(scrape.title),
-            scrape: scrape,
-            reg_num: reg_num,
-            position: start_i
-          }
+            full = target.text.to_s.strip
+            next if full.empty?
+
+            ctx = context_index[eid]
+            # Prefer the nearest actual § to avoid traversal order issues
+            effective_par = find_nearest_paragraph_number(target)
+            effective_ctx = {
+              kap: ctx&.dig(:kap),
+              paragraf: effective_par || ctx&.dig(:paragraf),
+              bilaga: ctx&.dig(:bilaga)
+            }
+            ctx_label = format_context_label(effective_ctx)
+            reg_label = compose_regulation_context(regulation_name(scrape.source.url), effective_ctx)
+
+            @results << {
+              element_text: full,
+              element_id: eid,
+              regulation: regulation_name(scrape.source.url),
+              display_label: reg_label,
+              subject: regulation_title_subject(scrape.title),
+              context_label: ctx_label,
+              scrape: scrape,
+              reg_num: reg_num
+            }
+            seen[eid] = true
+          end
+        rescue => e
+          Rails.logger.warn "Search parse error for scrape #{scrape.id}: #{e.message}"
         end
       end
 
-      # Sort by regulation number ascending, then by order of appearance within the text
-      @results.sort_by! { |r| [r[:reg_num], r[:position]] }
+      # Optional sorting: by regulation (default) or by text, ascending/descending
+      sort = params[:sort].to_s
+      dir = params[:dir].to_s
+      case sort
+      when 'text'
+        @results.sort_by! { |r| collapse_whitespace(r[:element_text]).downcase }
+      else # 'reg' or unspecified
+        @results.sort_by! { |r| [r[:reg_num], r[:element_id].to_s] }
+      end
+      @results.reverse! if dir == 'desc'
     end
   end
 
@@ -81,8 +117,11 @@ class ScrapesController < ApplicationController
     @article_count = article_count(@scrape.raw_html)
     @general_recommendation_count = general_recommendation_count(@scrape.raw_html)
     @appendix_count = appendix_count(@scrape.raw_html)
+
+    # Enrich raw HTML with synthetic IDs and global highlights for query matches
+    enriched_html = enrich_html_with_ids_and_highlights(@scrape.raw_html, params[:q])
     
-    render html: @scrape.raw_html.html_safe, layout: 'raw_content'
+    render html: enriched_html.html_safe, layout: 'raw_content'
   rescue ActiveRecord::RecordNotFound
     redirect_to scrapes_path, alert: 'Scrape not found'
   end
