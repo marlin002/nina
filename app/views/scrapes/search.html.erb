@@ -3,13 +3,12 @@
 <div class="scrapes-header">
   <h1><%= link_to "Benina", root_path, class: "home-link" %></h1>
   <p class="subtitle">
-    Sök enkelt i alla AFSar!
+    Inget tjafs - sök i AFS!
   </p>
 
   <div class="search-inline">
     <%= form_with url: search_scrapes_path, method: :get, local: true, class: "search-form" do %>
       <%= text_field_tag :q, @query, placeholder: "Sök paragrafer (ren text)", class: "input-text" %>
-      <%= number_field_tag :context, @context || 50, in: 10..200, step: 10, class: "input-number", title: "Sammanhang" %>
       <%= submit_tag "Sök", class: "btn btn-primary" %>
     <% end %>
   </div>
