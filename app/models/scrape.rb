@@ -1,8 +1,9 @@
 class Scrape < ApplicationRecord
   belongs_to :source
 
-  validates :url, presence: true, format: { with: URI::DEFAULT_PARSER.make_regexp }
-  validates :version, presence: true, numericality: { greater_than: 0 }
+  validates :source, presence: true
+  validates :url, presence: true, url: true
+  validates :version, presence: true, numericality: { only_integer: true, greater_than: 0 }
   
   # Versioning scopes
   scope :current, -> { where(current: true) }
@@ -18,7 +19,7 @@ class Scrape < ApplicationRecord
   scope :by_source, ->(source) { where(source: source) }
   scope :today, -> { where(fetched_at: Date.current.all_day) }
   
-  before_validation :set_fetched_at, if: -> { fetched_at.nil? }
+  before_save :set_fetched_at
   
   def display_name
     "Scrape #{id} - #{url}"
@@ -83,6 +84,6 @@ class Scrape < ApplicationRecord
   private
   
   def set_fetched_at
-    self.fetched_at = Time.current
+    self.fetched_at ||= Time.zone.now
   end
 end

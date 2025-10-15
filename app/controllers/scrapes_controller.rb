@@ -20,8 +20,7 @@ class ScrapesController < ApplicationController
 
   def search
     @query = params[:q].to_s.strip
-    @context = params[:context].to_i
-    @context = 50 if @context <= 0 || @context > 200
+    @context = 50 
 
     @results = []
 
