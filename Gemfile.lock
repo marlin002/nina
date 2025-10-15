@@ -297,6 +297,9 @@ GEM
     unicode-emoji (4.1.0)
     uri (1.0.3)
     useragent (0.16.11)
+    valid_url (0.0.4)
+      addressable
+      rails
     web-console (4.2.1)
       actionview (>= 6.0.0)
       activemodel (>= 6.0.0)
@@ -335,6 +338,7 @@ DEPENDENCIES
   stimulus-rails
   turbo-rails
   tzinfo-data
+  valid_url
   web-console
 
 BUNDLED WITH

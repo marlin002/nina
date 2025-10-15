@@ -29,6 +29,9 @@ gem "nokogiri"
 # HTTP client for scraping
 gem "faraday"
 
+# Url validation
+gem 'valid_url'
+
 # Use Redis adapter to run Action Cable in production
 # gem "redis", ">= 4.0.1"
 
