@@ -84,6 +84,6 @@ class Scrape < ApplicationRecord
   private
   
   def set_fetched_at
-    self.fetched_at ||= Time.zone.now
+    self.fetched_at ||= Time.current
   end
 end

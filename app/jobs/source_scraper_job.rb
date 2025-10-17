@@ -95,7 +95,7 @@ class SourceScraperJob < ApplicationJob
     # This ensures each source scrapes its intended URL
     
     # Extract content from the provision element and its children
-    raw_html = element.to_html
+    raw_html = ActionController::Base.helpers.sanitize(element.to_html)
     plain_text = extract_plain_text(element)
     
     {
@@ -138,10 +138,10 @@ class SourceScraperJob < ApplicationJob
     element.css('script, style, nav, footer, aside, .sidebar').remove
     
     # Extract text and clean it up
-    text = element.text
+    text = element.text(separator: ' ')
     
     # Normalize whitespace
-    text.gsub(/\s+/, ' ').strip
+    text.squish
   end
   
   
@@ -194,7 +194,6 @@ class SourceScraperJob < ApplicationJob
   end
   
   def content_changed?(existing_scrape, new_data)
-    existing_scrape.raw_html != new_data[:raw_html] ||
-      existing_scrape.plain_text != new_data[:plain_text]
+    existing_scrape.raw_html != new_data[:raw_html]
   end
 end
