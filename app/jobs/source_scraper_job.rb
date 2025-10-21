@@ -101,7 +101,7 @@ class SourceScraperJob < ApplicationJob
     {
       url: base_url,  # Use source's configured URL
       raw_html: raw_html,
-      plain_text: plain_text.strip,
+      plain_text: plain_text,
       title: regulation_title
     }
   end
@@ -136,10 +136,10 @@ class SourceScraperJob < ApplicationJob
     # Remove script and style elements
     element = element.dup
     element.css('script, style, nav, footer, aside, .sidebar').remove
-    
-    # Extract text and clean it up
-    text = element.text(separator: ' ')
-    
+
+    # Get all text nodes and join with space
+    text = element.xpath('.//text()').map(&:text).join(' ')
+
     # Normalize whitespace
     text.squish
   end
