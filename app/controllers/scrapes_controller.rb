@@ -31,7 +31,7 @@ class ScrapesController < ApplicationController
                       .where("plain_text ILIKE ?", "%#{escaped}%")
 
       pattern = Regexp.new(Regexp.escape(@query), Regexp::IGNORECASE)
-
+      
       scrapes.find_each do |scrape|
         text = scrape.plain_text.to_s
         next if text.empty?
@@ -72,6 +72,7 @@ class ScrapesController < ApplicationController
 
   def raw
     @scrape = Scrape.find(params[:id])
+    # @query = params[:q].to_s.strip
     
     # Set content for layout
     @regulation_name = regulation_name(@scrape.source.url)
@@ -81,6 +82,7 @@ class ScrapesController < ApplicationController
     @general_recommendation_count = general_recommendation_count(@scrape.raw_html)
     @appendix_count = appendix_count(@scrape.raw_html)
     
+    # ActionView::Base.highlight(@scrape.raw_html, @query.split)
     render html: @scrape.raw_html.html_safe, layout: 'raw_content'
   rescue ActiveRecord::RecordNotFound
     redirect_to scrapes_path, alert: 'Scrape not found'
