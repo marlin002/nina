@@ -8,7 +8,7 @@
 
   <div class="search-inline">
     <%= form_with url: search_scrapes_path, method: :get, local: true, class: "search-form" do %>
-      <%= text_field_tag :q, @query, placeholder: "Sök i alla föreskrifter", class: "input-text" %>
+      <%= text_field_tag :q, @query, placeholder: "Sökfras (t.ex. hjälm, kompetens, fordon)", class: "input-text" %>
       <%= submit_tag "Sök", class: "btn btn-primary" %>
     <% end %>
   </div>
@@ -33,7 +33,7 @@
 				<p><%= highlight(res[:snippet_text], @query.html_safe) %></p>
               </td>
               <td class="regulation-cell">
-                <%= link_to res[:regulation], raw_scrape_path(res[:scrape]), class: "regulation-link", target: "_blank" %>
+                <%= link_to res[:regulation], raw_scrape_path(res[:scrape], q: @query), class: "regulation-link", target: "_blank" %>
               </td>
             </tr>
           <% end %>
@@ -49,6 +49,6 @@
 <% else %>
   <div class="empty-state">
     <h3>Börja med att söka</h3>
-    <p>Ange ett sökord eller en fras för att hitta träffar i Arbetsmiljöverkets föreskrifter.</p>
+    <p>Ange ett sökord eller en sökfras för att hitta träffar i samtliga aktuella föreskriftshäften från Arbetsmiljöverket.</p>
   </div>
 <% end %>
