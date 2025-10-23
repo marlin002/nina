@@ -95,7 +95,7 @@ class SourceScraperJob < ApplicationJob
     # This ensures each source scrapes its intended URL
     
     # Extract content from the provision element and its children
-    raw_html = ActionController::Base.helpers.sanitize(element.to_html)
+    raw_html = element.to_html
     plain_text = extract_plain_text(element)
     
     {
