@@ -27,6 +27,7 @@ class ScrapesController < ApplicationController
     @results = []
 
     if @query.present?
+      log_search_query
       # Escape % and _ for ILIKE
       escaped = @query.gsub('%', '\\%').gsub('_', '\\_')
       scrapes = Scrape.joins(:source).includes(:source)
@@ -69,6 +70,8 @@ class ScrapesController < ApplicationController
 
       # Sort by regulation number ascending, then by order of appearance within the text
       @results.sort_by! { |r| [r[:reg_num], r[:position]] }
+      
+      log_search_results
     end
   end
 
@@ -90,6 +93,44 @@ class ScrapesController < ApplicationController
   end
 
   private
+  
+  def log_search_query
+    log_data = {
+      event: "search_query",
+      query: @query,
+      timestamp: Time.current.iso8601,
+    }
+    Rails.logger.info(log_data.to_json)
+  end
+  
+  def log_search_results
+    log_data = {
+      event: "search_results",
+      query: @query,
+      results_count: @results.size,
+      timestamp: Time.current.iso8601,
+    }
+    Rails.logger.info(log_data.to_json)
+  end
+  
+  def anonymize_ip
+    ip = request.remote_ip
+    return nil unless ip
+    
+    # Keep only first two octets for IPv4, first 48 bits for IPv6
+    if ip.include?('.')
+      ip.split('.')[0..1].join('.') + '.x.x'
+    elsif ip.include?(':')
+      ip.split(':')[0..2].join(':') + ':x:x:x:x:x'
+    else
+      'unknown'
+    end
+  end
+  
+  def anonymize_session_id
+    return nil unless session.id
+    Digest::SHA256.hexdigest(session.id.to_s)[0..15]
+  end
   
   # Set protection against robot indexing. See also Robots.txt and <meta..> in Application.html.erb
   def set_noindex
