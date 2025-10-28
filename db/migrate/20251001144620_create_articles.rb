@@ -10,7 +10,7 @@ class CreateArticles < ActiveRecord::Migration[7.2]
 
       t.timestamps
     end
-    
+
     add_index :articles, :url
     add_index :articles, :fetched_at
   end
