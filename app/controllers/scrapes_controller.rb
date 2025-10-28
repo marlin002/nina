@@ -36,12 +36,16 @@ class ScrapesController < ApplicationController
       pattern = Regexp.new(Regexp.escape(@query), Regexp::IGNORECASE)
 
       scrapes.find_each do |scrape|
+        break if @results.size >= 500
+        
         text = scrape.plain_text.to_s
         next if text.empty?
 
         reg_num = regulation_number(scrape.source.url)
 
         text.to_enum(:scan, pattern).each do
+          break if @results.size >= 500
+          
           md = Regexp.last_match
           start_i, end_i = md.begin(0), md.end(0)
 
