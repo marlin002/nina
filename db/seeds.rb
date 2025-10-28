@@ -42,7 +42,7 @@ regulation_urls.each_with_index do |url, index|
   begin
     # Use unscoped to check all versions, but find current version
     existing_source = Source.unscoped.find_by(url: url, current: true)
-    
+
     if existing_source
       existing_count += 1
       puts "  ♻️  Found existing source #{index + 1}/#{regulation_urls.length}: AFS 2023:#{index + 1}"
@@ -56,7 +56,7 @@ regulation_urls.each_with_index do |url, index|
       created_count += 1
       puts "  ✅ Created source #{index + 1}/#{regulation_urls.length}: AFS 2023:#{index + 1}"
     end
-    
+
   rescue => e
     puts "  ❌ Error creating source for #{url}: #{e.message}"
   end

@@ -30,7 +30,7 @@ gem "nokogiri"
 gem "faraday"
 
 # Url validation
-gem 'valid_url'
+gem "valid_url"
 
 # Use Redis adapter to run Action Cable in production
 # gem "redis", ">= 4.0.1"

@@ -10,7 +10,7 @@ Rails.application.routes.draw do
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
 
   # Scrapes routes
-  resources :scrapes, only: [:index] do
+  resources :scrapes, only: [ :index ] do
     collection do
       get :search
     end
@@ -18,7 +18,7 @@ Rails.application.routes.draw do
       get :raw
     end
   end
-  
+
   # Defines the root path route ("/")
   root "scrapes#index"
 end
