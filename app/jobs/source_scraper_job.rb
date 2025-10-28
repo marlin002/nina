@@ -76,6 +76,9 @@ class SourceScraperJob < ApplicationJob
     provision_element = doc.at_css(".provision")
 
     if provision_element
+      # Select and remove ALL <span class="provisioncmsurl"> elements (and their children)
+      provision_element.at_css(".provisioncmsurl").remove
+      
       scrape_data = extract_scrape_data(provision_element, base_url, regulation_title)
       if scrape_data
         scrapes << scrape_data
