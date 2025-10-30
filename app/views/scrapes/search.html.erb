@@ -14,7 +14,12 @@
   </div>
 </div>
 
-<% if @query.present? %>
+<% if @query_error.present? %>
+  <div class="empty-state">
+    <h3>Felaktig sökfras</h3>
+    <p><%= @query_error %></p>
+  </div>
+<% elsif @query.present? %>
 
   <div class="search-results">
     <% if @results.any? %>
@@ -22,18 +27,34 @@
         <thead>
           <tr>
             <th>Resultat: <%= @results.length %> träff<%= @results.length == 1 ? '' : 'ar' %></th>
-            <th>Föreskrift</th>
+            <th class="sortable-header">
+              <% if @sort_by == "reference_desc" %>
+                <%= link_to "Föreskrift", search_scrapes_path(q: @query, sort_by: "relevance"), class: "sort-header-link" %>
+                <span class="sort-indicator">▼</span>
+              <% elsif @sort_by == "reference" %>
+                <%= link_to "Föreskrift", search_scrapes_path(q: @query, sort_by: "reference_desc"), class: "sort-header-link" %>
+                <span class="sort-indicator">▲</span>
+              <% else %>
+                <%= link_to "Föreskrift", search_scrapes_path(q: @query, sort_by: "reference"), class: "sort-header-link" %>
+              <% end %>
+            </th>
           </tr>
         </thead>
         <tbody>
           <% @results.each do |res| %>
             <tr>
               <td class="match-snippet">
-                <%# Highlight the matched text within the snippet %>
-				<p><%= highlight(res[:snippet_text], @query.html_safe) %></p>
+                <%# Display element text with highlighted query %>
+                <p class="element-text"><%= highlight(res[:element_text], @query.html_safe) %></p>
               </td>
               <td class="regulation-cell">
-                <%= link_to res[:regulation], raw_scrape_path(res[:scrape], q: @query), class: "regulation-link", target: "_blank" %>
+                <%# Display complete reference with hierarchy %>
+                <div class="complete-reference">
+                  <%= link_to res[:regulation_name], raw_scrape_path(res[:scrape], q: @query), class: "regulation-link", title: res[:subject] %>
+                  <% if res[:complete_reference] != res[:regulation_name] %>
+                    <br><span class="hierarchy-info"><%= res[:complete_reference].sub(res[:regulation_name], "").gsub(/^, /, "") %></span>
+                  <% end %>
+                </div>
               </td>
             </tr>
           <% end %>

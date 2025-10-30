@@ -12,53 +12,34 @@ module ApplicationHelper
     "AFS 2023:#{regulation_number(url)}"
   end
 
-  # Extract article preview from HTML content
-  # Finds the first .section-sign element (e.g., "1 §") and the following paragraph
-  def section_preview(raw_html, length_limit = 200)
-    return "No content available" if raw_html.blank?
+  # Extract article preview from a scrape using elements table
+  # Reconstructs section 1 (§) and extracts plain text for preview
+  def section_preview(scrape, length_limit = 200)
+    return "No preview content available" unless scrape.is_a?(Scrape)
 
     begin
-      doc = Nokogiri::HTML(raw_html)
-      first_section = doc.css(".section-sign").first
+      # Reconstruct section 1 with all its content
+      section_html = Element.reconstruct_section_with_advice(scrape, 1)[:section_html]
 
-      if first_section
-        section_text = first_section.text.strip
+      if section_html.present?
+        # Parse HTML and extract text content
+        doc = Nokogiri::HTML(section_html)
+        text = doc.text.gsub(/\s+/, " ").strip
 
-        # Find the next element that contains content
-        next_element = first_section.next_element
-        while next_element && next_element.text.strip.blank?
-          next_element = next_element.next_element
-        end
-
-        if next_element
-          paragraph_text = next_element.text.strip
-          combined_text = "#{section_text} #{paragraph_text}"
-          # Manual truncation with ellipsis
-          combined_text.length > length_limit ?
-                 "#{combined_text[0, length_limit-3]}..." :
-                 combined_text
+        if text.present?
+          preview = "1 § #{text}"
+          preview.length > length_limit ?
+                 "#{preview[0, length_limit - 3]}..." :
+                 preview
         else
-          section_text
+          "No preview content available"
         end
       else
-        # Fallback: use first paragraph or plain text extraction
-        first_paragraph = doc.css("p").first
-        if first_paragraph
-          text = first_paragraph.text.strip
-          text.length > length_limit ?
-                 "#{text[0, length_limit-3]}..." :
-                 text
-        else
-          # Final fallback: use existing plain_text logic
-          plain_text = doc.text.gsub(/\s+/, " ").strip
-          plain_text.length > length_limit ?
-                 "#{plain_text[0, length_limit-3]}..." :
-                 plain_text
-        end
+        "No preview content available"
       end
     rescue => e
       Rails.logger.warn "Error extracting section preview: #{e.message}"
-      "Preview not available"
+      "No preview content available"
     end
   end
 
@@ -104,68 +85,6 @@ module ApplicationHelper
     end
   end
 
-  # Extract regulation subject/topic from HTML content
-  # Looks for meaningful headings or contextual clues about the regulation's purpose
-  def regulation_subject(raw_html)
-    return "Work Environment Regulation" if raw_html.blank?
-
-    begin
-      doc = Nokogiri::HTML(raw_html)
-
-      # Strategy 1: Look for meaningful h2 headings that indicate subject matter
-      headings = doc.css("h2")
-
-      # Look for headings that contain key subject indicators
-      subject_headings = headings.select do |h|
-        text = h.text.strip.downcase
-        # Look for headings that seem to describe the regulation's scope or topic
-        text.match?(/(organisatorisk|social|arbetsmiljö|byggnads|konstruktion|maskin|kemisk|tryck|explosiv|personlig|skydd)/)
-      end
-
-      if subject_headings.any?
-        subject = subject_headings.first.text.strip
-        # Clean up the subject text
-        subject = subject.gsub(/^\d+\s+kap\.\s*/i, "") # Remove "2 kap. "
-        subject = subject.gsub(/^avdelning\s+[IVX]+:\s*/i, "") # Remove "Avdelning II: "
-        return subject if subject.length > 10
-      end
-
-      # Strategy 2: Look for keywords in the purpose section (after "Syftet")
-      first_section = doc.css(".section-sign").first
-      if first_section
-        next_element = first_section.next_element
-        while next_element && next_element.text.strip.blank?
-          next_element = next_element.next_element
-        end
-
-        if next_element
-          purpose_text = next_element.text.strip
-          # Extract key topic from purpose statement
-          if purpose_text.match?(/(byggnads|byggarbete|konstruktion)/i)
-            return "Construction and Building Work"
-          elsif purpose_text.match?(/(maskin|utrustning|verktyg)/i)
-            return "Machinery and Equipment"
-          elsif purpose_text.match?(/(kemisk|ämne|exponering)/i)
-            return "Chemical Substances and Exposure"
-          elsif purpose_text.match?(/(systematisk.*arbetsmiljö)/i)
-            return "Systematic Work Environment Management"
-          elsif purpose_text.match?(/(arbetsplats|lokalutformning)/i)
-            return "Workplace Design"
-          elsif purpose_text.match?(/(arbetstid|vila)/i)
-            return "Working Time and Rest"
-          end
-        end
-      end
-
-      # Strategy 3: Generic fallback
-      "Work Environment Regulation"
-
-    rescue => e
-      Rails.logger.warn "Error extracting regulation subject: #{e.message}"
-      "Work Environment Regulation"
-    end
-  end
-
   # Extract the subject part from the stored regulation title
   # e.g. "Systematiskt arbetsmiljöarbete – grundläggande skyldigheter för dig med arbetsgivaransvar (AFS 2023:1)"
   #   -> "Systematiskt arbetsmiljöarbete – grundläggande skyldigheter för dig med arbetsgivaransvar"
@@ -174,5 +93,144 @@ module ApplicationHelper
 
     # Remove the (AFS 2023:X) part from the end
     title.gsub(/\s*\(AFS\s+\d{4}:\d+\)\s*$/, "").strip
+  end
+
+  # Extract hierarchy for any given element in the raw_html
+  # Returns hash with regulation, chapter (optional), section (optional), appendix (optional), transitional (optional), or general_recommendation (optional)
+  def extract_hierarchy(element, doc, url)
+    # If element is a heading, use the hierarchy of the next element
+    if element.name =~ /^h[1-6]$/i
+      next_element = find_next_content_element(element)
+      return extract_hierarchy(next_element, doc, url) if next_element
+    end
+
+    regulation = extract_regulation_number(url)
+
+    # Check for övergångsbestämmelser (transitional provisions)
+    transitional = find_current_transitional(element, doc)
+    if transitional
+      return {
+        regulation: regulation,
+        transitional: true
+      }
+    end
+
+    # Check for appendix
+    appendix = find_current_appendix(element, doc)
+    if appendix
+      return {
+        regulation: regulation,
+        appendix: extract_appendix_number(appendix)
+      }
+    end
+
+    # Regular hierarchy: chapter and section
+    chapter = find_current_chapter(element, doc)
+    section = find_current_section(element, doc)
+
+    # If element itself is a section-sign, use it
+    if element.name == "span" && element["class"].to_s.include?("section-sign")
+      section = element
+    end
+
+    # Check if element is within a general recommendation (Allmänna råd)
+    is_general_recommendation = in_general_recommendation?(element)
+
+    {
+      regulation: regulation,
+      chapter: chapter ? extract_chapter_number(chapter) : nil,
+      section: section ? extract_section_number(section) : nil,
+      general_recommendation: is_general_recommendation
+    }
+  end
+
+  # Extract regulation number from URL
+  def extract_regulation_number(url)
+    match = url.match(/afs-(\d{4})(\d+)/)
+    match ? "AFS #{match[1]}:#{match[2]}" : nil
+  end
+
+  # Find next content element after a heading
+  def find_next_content_element(heading)
+    heading.xpath("following::*").each do |el|
+      # Skip empty elements and only return content-bearing elements
+      if el.text.strip.present? && ![ "script", "style", "button" ].include?(el.name)
+        return el if [ "div", "p", "span", "li" ].include?(el.name)
+      end
+    end
+    nil
+  end
+
+  # Find if element is within övergångsbestämmelser (transitional provisions)
+  def find_current_transitional(element, doc)
+    element.xpath("preceding::h2[@id]").reverse_each do |h2|
+      id = h2["id"].to_s.downcase
+      text = h2.text.strip.downcase
+
+      # Check if this is övergångsbestämmelser
+      if id.include?("overgang") || text.include?("övergång")
+        return h2
+      end
+
+      # Stop if we hit a bilaga or chapter - övergångsbestämmelser comes after main content
+      return nil if id.start_with?("bilaga") || h2.text.match?(/^\d+\s+kap\.?/i)
+    end
+    nil
+  end
+
+  # Check if element is within a general recommendation (Allmänna råd)
+  def in_general_recommendation?(element)
+    # Check if element or any of its ancestors is a div.general-recommendation
+    ancestor = element.xpath("ancestor::div[@class='general-recommendation']").first
+    !ancestor.nil?
+  end
+
+  # Find current appendix by walking backwards through h2 elements
+  def find_current_appendix(element, doc)
+    element.xpath("preceding::h2[@id]").reverse_each do |h2|
+      return h2 if h2["id"].to_s.downcase.start_with?("bilaga")
+    end
+    nil
+  end
+
+  # Extract appendix number from appendix header
+  def extract_appendix_number(appendix_h2)
+    text = appendix_h2.text.strip.gsub(/[\u00A0\s]+/, " ")  # Normalize spaces including non-breaking spaces
+    match = text.match(/Bilaga\s+(\d+|[A-Z])/i)
+    match ? match[1] : nil
+  end
+
+  # Find current chapter by walking backwards through h2 and h3 elements
+  def find_current_chapter(element, doc)
+    # Check both h2 and h3 elements, as some documents use h3 for chapters
+    element.xpath("preceding::h2 | preceding::h3").reverse_each do |heading|
+      text = heading.text.strip.gsub(/[\u00A0\s]+/, " ")  # Normalize spaces
+      return heading if text.match?(/^\d+\s+kap\.?/i)
+    end
+    nil
+  end
+
+  # Extract chapter number from chapter header
+  def extract_chapter_number(chapter_heading)
+    text = chapter_heading.text.strip.gsub(/[\u00A0\s]+/, " ")  # Normalize spaces
+    match = text.match(/^(\d+)\s+kap\.?/i)
+    match ? match[1].to_i : nil
+  end
+
+  # Find current section by looking for nearest preceding .section-sign element
+  def find_current_section(element, doc)
+    element.xpath("preceding::span[@class='section-sign']").last
+  end
+
+  # Extract section number from section-sign span
+  def extract_section_number(section_span)
+    text = section_span.text.strip
+    match = text.match(/(\d+)\s*§/)
+    return match[1].to_i if match
+
+    # Fallback: try id attribute
+    id = section_span["id"].to_s
+    match = id.match(/(\d+)§/)
+    match ? match[1].to_i : nil
   end
 end
