@@ -10,9 +10,41 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_10_06_124617) do
+ActiveRecord::Schema[7.2].define(version: 2025_10_30_165450) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "elements", force: :cascade do |t|
+    t.bigint "scrape_id", null: false
+    t.string "tag_name", null: false
+    t.string "element_class"
+    t.string "element_id"
+    t.text "text_content"
+    t.text "html_snippet", null: false
+    t.string "regulation"
+    t.integer "chapter"
+    t.integer "section"
+    t.string "appendix"
+    t.boolean "is_transitional", default: false, null: false
+    t.boolean "is_general_recommendation", default: false, null: false
+    t.text "css_path"
+    t.integer "position_in_parent"
+    t.integer "version", default: 1, null: false
+    t.boolean "current", default: true, null: false
+    t.datetime "superseded_at", precision: nil
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["appendix"], name: "index_elements_on_appendix"
+    t.index ["chapter"], name: "index_elements_on_chapter"
+    t.index ["is_general_recommendation"], name: "index_elements_on_is_general_recommendation"
+    t.index ["is_transitional"], name: "index_elements_on_is_transitional"
+    t.index ["regulation"], name: "index_elements_on_regulation"
+    t.index ["scrape_id", "current"], name: "index_elements_on_scrape_id_and_current"
+    t.index ["scrape_id", "version"], name: "index_elements_on_scrape_id_and_version"
+    t.index ["scrape_id"], name: "index_elements_on_scrape_id"
+    t.index ["section"], name: "index_elements_on_section"
+    t.index ["tag_name"], name: "index_elements_on_tag_name"
+  end
 
   create_table "good_job_batches", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -108,7 +140,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_10_06_124617) do
   create_table "scrapes", force: :cascade do |t|
     t.string "url", null: false
     t.text "raw_html"
-    t.text "plain_text"
     t.datetime "fetched_at"
     t.bigint "source_id", null: false
     t.datetime "created_at", null: false
@@ -139,5 +170,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_10_06_124617) do
     t.index ["url", "version"], name: "index_sources_on_url_version"
   end
 
+  add_foreign_key "elements", "scrapes"
   add_foreign_key "scrapes", "sources"
 end

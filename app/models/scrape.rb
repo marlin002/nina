@@ -1,5 +1,6 @@
 class Scrape < ApplicationRecord
   belongs_to :source
+  has_many :elements, dependent: :destroy
 
   validates :source, presence: true
   validates :url, presence: true, url: true
@@ -20,30 +21,21 @@ class Scrape < ApplicationRecord
   scope :today, -> { where(fetched_at: Date.current.all_day) }
 
   before_save :set_fetched_at
+  after_save :enqueue_element_parsing, if: :should_parse_elements?
 
   def display_name
     "Scrape #{id} - #{url}"
   end
 
   def content_summary(limit = 200)
-    return "No content" if plain_text.blank?
+    return "No content" if elements.blank?
 
-    plain_text.strip.truncate(limit)
+    text = elements.limit(5).map(&:text_content).compact.join(" ").strip
+    text.blank? ? "No content" : text.truncate(limit)
   end
 
   def has_content?
-    raw_html.present? || plain_text.present?
-  end
-
-  def word_count
-    return 0 if plain_text.blank?
-
-    plain_text.split.count
-  end
-
-  def reading_time_minutes
-    # Average reading speed: 200 words per minute
-    (word_count / 200.0).ceil
+    raw_html.present? || elements.exists?
   end
 
   def domain
@@ -85,5 +77,17 @@ class Scrape < ApplicationRecord
 
   def set_fetched_at
     self.fetched_at ||= Time.current
+  end
+
+  def should_parse_elements?
+    # Parse elements if:
+    # 1. This is a new scrape (just created)
+    # 2. The raw HTML has changed
+    # 3. The scrape was marked as current
+    new_record? || raw_html_changed? || current_changed?
+  end
+
+  def enqueue_element_parsing
+    ParseScrapeElementsJob.perform_later(id)
   end
 end

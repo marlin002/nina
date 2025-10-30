@@ -78,7 +78,7 @@ class SourceScraperJob < ApplicationJob
     if provision_element
       # Remove ALL .provisioncmsurl elements
       provision_element.css(".provisioncmsurl").each(&:remove)
-      
+
       scrape_data = extract_scrape_data(provision_element, base_url, regulation_title)
       if scrape_data
         scrapes << scrape_data
@@ -99,12 +99,10 @@ class SourceScraperJob < ApplicationJob
 
     # Extract content from the provision element and its children
     raw_html = element.to_html
-    plain_text = extract_plain_text(element)
 
     {
       url: base_url,  # Use source's configured URL
       raw_html: raw_html,
-      plain_text: plain_text,
       title: regulation_title
     }
   end
@@ -135,18 +133,6 @@ class SourceScraperJob < ApplicationJob
     end
   end
 
-  def extract_plain_text(element)
-    # Remove script and style elements
-    element = element.dup
-    element.css("script, style, nav, footer, aside, .sidebar").remove
-
-    # Get all text nodes and join with space
-    text = element.xpath(".//text()").map(&:text).join(" ")
-
-    # Normalize whitespace
-    text.squish
-  end
-
 
   def store_scrapes(scrapes_data)
     scrapes_data.each do |scrape_data|
@@ -165,7 +151,6 @@ class SourceScraperJob < ApplicationJob
             new_version = Scrape.create!(
               url: scrape_data[:url],
               raw_html: scrape_data[:raw_html],
-              plain_text: scrape_data[:plain_text],
               title: scrape_data[:title],
               source: @source,
               fetched_at: Time.current,
@@ -181,7 +166,6 @@ class SourceScraperJob < ApplicationJob
           new_scrape = Scrape.create!(
             url: scrape_data[:url],
             raw_html: scrape_data[:raw_html],
-            plain_text: scrape_data[:plain_text],
             title: scrape_data[:title],
             source: @source,
             fetched_at: Time.current,
