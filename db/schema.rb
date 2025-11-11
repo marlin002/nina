@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_10_30_165450) do
+ActiveRecord::Schema[7.2].define(version: 2025_11_10_211248) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -154,6 +154,14 @@ ActiveRecord::Schema[7.2].define(version: 2025_10_30_165450) do
     t.index ["url", "source_id", "current"], name: "index_scrapes_on_url_source_current"
     t.index ["url", "source_id", "version"], name: "index_scrapes_on_url_source_version"
     t.index ["url"], name: "index_scrapes_on_url"
+  end
+
+  create_table "search_queries", force: :cascade do |t|
+    t.string "query", null: false
+    t.integer "match_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_search_queries_on_created_at"
   end
 
   create_table "sources", force: :cascade do |t|

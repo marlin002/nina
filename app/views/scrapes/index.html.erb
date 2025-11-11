@@ -1,80 +1,49 @@
-<% content_for :title, "Benina" %>
+<% content_for :title, "iAFS" %>
 
 <div class="scrapes-header">
-  <h1>Benina</h1>
+  <h1>iAFS</h1>
   <p class="subtitle">
-    Inget tjafs - sök <%= ["en", "i", "din"].sample %> AFS!
+    <%= t('ui.tagline', article: ["en", "i", "din"].sample) %>
   </p>
   
   <div class="search-inline">
     <%= form_with url: search_scrapes_path, method: :get, local: true, class: "search-form" do %>
-      <%= text_field_tag :q, params[:q], placeholder: "Sökfras (t.ex. hjälm, kompetens, fordon)", class: "input-text" %>
-      <%= submit_tag "Sök", class: "btn btn-primary" %>
+      <%= text_field_tag :q, params[:q], placeholder: t('search.form.placeholder'), class: "input-text" %>
+      <%= submit_tag t('buttons.search'), class: "btn btn-primary" %>
     <% end %>
   </div>
-  
-  <div class="stats-summary">
-    <div class="stat-item">
-      <span class="stat-number"><%= @stats[:total_scrapes] %></span>
-      <span class="stat-label">Häften</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-number"><%= @stats[:total_articles] %></span>
-      <span class="stat-label">Paragrafer</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-number"><%= @stats[:total_general_recommendations] %></span>
-      <span class="stat-label">Allmänna råd</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-number"><%= @stats[:total_appendices] %></span>
-      <span class="stat-label">Bilagor</span>
-    </div>
-  </div>
-  <% if @stats[:last_updated] %>
-    <p class="last-updated">
-      <em>Senast uppdaterad: <%= @stats[:last_updated].strftime("%Y-%m-%d kl %H:%M") %></em>
-    </p>
-  <% end %>
 </div>
 
-<div class="regulation-grid">
-  <% @scrapes.each do |scrape| %>
-    <div class="regulation-card">
-      <div class="regulation-header">
-        <h3><%= regulation_name(scrape.source.url) %></h3>
-        <div class="regulation-stats">
-          <span class="stat">📋 <%= article_count(scrape.raw_html) %> paragrafer</span>
-          <span class="stat">💡 <%= general_recommendation_count(scrape.raw_html) %> allmänna råd</span>
-          <span class="stat">📎 <%= appendix_count(scrape.raw_html) %> bilagor</span>
-        </div>
+<% if @recent_searches.any? || @popular_searches.any? %>
+  <div class="search-panels">
+    <% if @recent_searches.any? %>
+      <div class="search-panel">
+        <h3><%= t('headings.recent_searches') %></h3>
+        <ul class="search-list">
+          <% @recent_searches.each do |search| %>
+            <li>
+              <%= link_to "#{search.query} (#{search.match_count} #{t('nouns.hit', count: search.match_count)}) - #{search.time_ago}", search_scrapes_path(q: search.query), class: "search-link" %>
+            </li>
+          <% end %>
+        </ul>
       </div>
-      
-      
-      <div class="regulation-subject">
-        <p class="subject-text">
-          <%= regulation_title_subject(scrape.title) %>
-        </p>
+    <% end %>
+    
+    <% if @popular_searches.any? %>
+      <div class="search-panel">
+        <h3><%= t('headings.popular_searches') %></h3>
+        <ol class="search-list numbered">
+          <% @popular_searches.each do |search| %>
+            <li>
+              <%= link_to "#{search.query} (#{search.match_count} #{t('nouns.hit', count: search.match_count)})", search_scrapes_path(q: search.query), class: "search-link" %>
+            </li>
+          <% end %>
+        </ol>
       </div>
-      
-      <div class="regulation-preview">
-        <p class="preview-text">
-          <%= section_preview(scrape, 200) %>
-        </p>
-      </div>
-      
-      <div class="regulation-actions">
-        <%= link_to "Visa", raw_scrape_path(scrape), class: "btn btn-primary", target: "_blank" %>
-        <%= link_to "Källa", scrape.source.url, class: "btn btn-outline", target: "_blank" %>
-      </div>
-    </div>
-  <% end %>
-</div>
-
-<% if @scrapes.empty? %>
-  <div class="empty-state">
-    <h3>Inget inhämtat innehåll tillgängligt</h3>
-    <p>Kör scraping-jobben för att fylla sidan med innehåll.</p>
-    <pre><code>rails scrape:all</code></pre>
+    <% end %>
   </div>
 <% end %>
+
+<div class="view-all-regulations">
+  <%= link_to t('links.all_afs'), all_scrapes_path, class: "btn btn-info" %>
+</div>
