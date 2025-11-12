@@ -8,7 +8,10 @@ class SearchQuery < ApplicationRecord
   scope :popular, -> { recent_year.group(:query).select("search_queries.query, COUNT(*) as search_count, MAX(search_queries.match_count) as match_count, MAX(search_queries.created_at) as last_searched").order("search_count DESC, last_searched DESC").limit(20) }
 
   def self.log_search(query, match_count)
-    create!(query: query, match_count: match_count)
+    cleaned = QuerySanitizer.clean(query)
+    return if cleaned.blank? || match_count.to_i <= 0
+
+    create!(query: cleaned, match_count: match_count)
   end
 
   def time_ago

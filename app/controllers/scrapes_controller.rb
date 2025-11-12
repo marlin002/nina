@@ -41,7 +41,7 @@ class ScrapesController < ApplicationController
   end
 
   def search
-    @query = params[:q].to_s.strip
+    @query = QuerySanitizer.clean(params[:q])
     @sort_by = params[:sort_by].to_s.strip
     @results = []
 
@@ -79,8 +79,8 @@ class ScrapesController < ApplicationController
       # Sort based on parameter
       @results = apply_sort(@results, @sort_by)
 
-      # Log search query with match count
-      SearchQuery.log_search(@query, @results.size)
+      # Log search query with match count only if there are results
+      SearchQuery.log_search(@query, @results.size) if @results.any?
     end
   end
 

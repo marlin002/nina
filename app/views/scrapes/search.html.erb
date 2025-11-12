@@ -45,7 +45,7 @@
             <tr>
               <td class="match-snippet">
                 <%# Display element text with highlighted query %>
-                <p class="element-text"><%= highlight(res[:element_text], @query.html_safe) %></p>
+                <p class="element-text"><%= highlight(res[:element_text], @query) %></p>
               </td>
               <td class="regulation-cell">
                 <%# Display complete reference with hierarchy %>
