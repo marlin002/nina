@@ -14,19 +14,4 @@ class SearchQuery < ApplicationRecord
     create!(query: cleaned, match_count: match_count)
   end
 
-  def time_ago
-    time_diff = Time.current - created_at
-    case time_diff
-    when 0...60
-      "just now"
-    when 60...3600
-      "#{(time_diff / 60).to_i} min ago"
-    when 3600...86400
-      "#{(time_diff / 3600).to_i} h ago"
-    when 86400...604800
-      "#{(time_diff / 86400).to_i} d ago"
-    else
-      "#{(time_diff / 604800).to_i} w ago"
-    end
-  end
 end

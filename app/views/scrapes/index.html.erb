@@ -22,7 +22,7 @@
         <ul class="search-list">
           <% @recent_searches.each do |search| %>
             <li>
-              <%= link_to "#{search.query} (#{search.match_count} #{t('nouns.hit', count: search.match_count)}) - #{search.time_ago}", search_scrapes_path(q: search.query), class: "search-link" %>
+              <%= link_to "#{search.query} (#{search.match_count} #{t('nouns.hit', count: search.match_count)}) - #{time_ago_in_words(search.created_at)}", search_scrapes_path(q: search.query), class: "search-link" %>
             </li>
           <% end %>
         </ul>
