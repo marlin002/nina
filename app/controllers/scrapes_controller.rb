@@ -199,8 +199,12 @@ class ScrapesController < ApplicationController
     match ? match[1] : "999"
   end
 
-  # Set protection against robot indexing. See also Robots.txt and <meta..> in Application.html.erb
+  # Robots header: allow indexing only if explicitly enabled
   def set_noindex
-    response.headers["X-Robots-Tag"] = "noindex, nofollow"
+    if ENV["ALLOW_INDEXING"] == "true"
+      response.headers["X-Robots-Tag"] = "index, follow"
+    else
+      response.headers["X-Robots-Tag"] = "noindex, nofollow"
+    end
   end
 end
