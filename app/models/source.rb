@@ -77,7 +77,7 @@ class Source < ApplicationRecord
     self.settings ||= {
       enabled: true,
       scrape_frequency: "daily",
-      user_agent: "Benina Swedish Content Scraper 1.0",
+      user_agent: "iAFS Swedish Content Scraper 1.0",
       timeout: 30,
       language: "sv-SE"
     }

@@ -18,22 +18,40 @@ class ScrapesController < ApplicationController
       total_appendices: scrapes_unsorted.sum { |s| appendix_count(s.raw_html) },
       last_updated: scrapes_unsorted.maximum(:fetched_at)
     }
+
+    @recent_searches = SearchQuery.recent
+    @popular_searches = SearchQuery.popular
+  end
+
+  def all
+    scrapes_unsorted = Scrape.joins(:source).includes(:source)
+
+    # Sort by regulation number numerically (AFS 2023:1, 2023:2, etc.)
+    @scrapes = scrapes_unsorted.sort_by do |scrape|
+      regulation_number(scrape.source.url)
+    end
+
+    @stats = {
+      total_scrapes: scrapes_unsorted.count,
+      total_articles: scrapes_unsorted.sum { |s| article_count(s.raw_html) },
+      total_general_recommendations: scrapes_unsorted.sum { |s| general_recommendation_count(s.raw_html) },
+      total_appendices: scrapes_unsorted.sum { |s| appendix_count(s.raw_html) },
+      last_updated: scrapes_unsorted.maximum(:fetched_at)
+    }
   end
 
   def search
-    @query = params[:q].to_s.strip
+    @query = QuerySanitizer.clean(params[:q])
     @sort_by = params[:sort_by].to_s.strip
     @results = []
 
     # Validate query length (min 2, max 100 characters)
-    if @query.present? && (@query.length < 2 || @query.length > 100)
-      @query_error = "Sökfras måste vara mellan 2 och 100 tecken."
+    if @query.present? && @query.length > 100
+      @query_error = I18n.t("search.errors.too_long")
       return
     end
 
     if @query.present?
-      log_search_query
-
       # Search elements for matching text content
       search_service = ElementSearchService.new(limit: 500)
       elements = search_service.search(@query)
@@ -61,7 +79,8 @@ class ScrapesController < ApplicationController
       # Sort based on parameter
       @results = apply_sort(@results, @sort_by)
 
-      log_search_results
+      # Log search query with match count only if there are results
+      SearchQuery.log_search(@query, @results.size) if @results.any?
     end
   end
 
@@ -180,27 +199,12 @@ class ScrapesController < ApplicationController
     match ? match[1] : "999"
   end
 
-  def log_search_query
-    log_data = {
-      event: "search_query",
-      query: @query,
-      timestamp: Time.current.iso8601
-    }
-    Rails.logger.info(log_data.to_json)
-  end
-
-  def log_search_results
-    log_data = {
-      event: "search_results",
-      query: @query,
-      results_count: @results.size,
-      timestamp: Time.current.iso8601
-    }
-    Rails.logger.info(log_data.to_json)
-  end
-
-  # Set protection against robot indexing. See also Robots.txt and <meta..> in Application.html.erb
+  # Robots header: allow indexing only if explicitly enabled
   def set_noindex
-    response.headers["X-Robots-Tag"] = "noindex, nofollow"
+    if ENV["ALLOW_INDEXING"] == "true"
+      response.headers["X-Robots-Tag"] = "index, follow"
+    else
+      response.headers["X-Robots-Tag"] = "noindex, nofollow"
+    end
   end
 end

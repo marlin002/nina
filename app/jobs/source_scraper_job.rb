@@ -52,7 +52,7 @@ class SourceScraperJob < ApplicationJob
     end
 
     headers = {
-      "User-Agent" => settings.fetch("user_agent", "Benina Swedish Content Scraper 1.0"),
+      "User-Agent" => settings.fetch("user_agent", "iAFS Swedish Content Scraper 1.0"),
       "Accept" => "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
       "Accept-Language" => "sv-SE,sv;q=0.9,en-US;q=0.8,en;q=0.5",
       "Accept-Charset" => "UTF-8,*;q=0.5",

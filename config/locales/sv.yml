@@ -1,0 +1,62 @@
+sv:
+  i18n:
+    plural:
+      keys:
+        - one
+        - other
+  nouns:
+    hit:
+      one: "träff"
+      other: "träffar"
+    booklet:
+      one: "häfte"
+      other: "häften"
+    paragraph:
+      one: "paragraf"
+      other: "paragrafer"
+    recommendation:
+      one: "allmänt råd"
+      other: "allmänna råd"
+    appendix:
+      one: "bilaga"
+      other: "bilagor"
+    search:
+      one: "sökning"
+      other: "sökningar"
+  headings:
+    recent_searches: "Senaste sökningar"
+    popular_searches: "Populära sökningar"
+    results: "Resultat"
+    last_updated: "Senast uppdaterad"
+    all_afs_subtitle: "Alla AFS från Arbetsmiljöverket"
+  buttons:
+    show: "Visa"
+    source: "Källa"
+    back: "← Tillbaka"
+    search: "Sök"
+  links:
+    all_afs: "Alla AFSar →"
+  search:
+    form:
+      placeholder: "Sökfras (t.ex. hjälm, kompetens, fordon)"
+    errors:
+      too_long: "Sökfras får vara max 100 tecken."
+    table:
+      regulation: "Föreskrift"
+    empty:
+      no_results: "Inga träffar"
+      refine: "Försök att korta ner din fråga, eller skriv en ny."
+      start_search: "Börja med att söka"
+      start_tip: "Ange ett sökord eller en sökfras för att hitta träffar i samtliga aktuella föreskriftshäften från Arbetsmiljöverket."
+  ui:
+    tagline: "Inget tjafs - sök %{article} AFS!"
+    nav_hint: "Stäng fliken för att återgå till listan"
+  empty:
+    no_content: "Inget innehåll tillgängligt"
+    run_jobs_tip: "Kör scraping-jobben för att fylla sidan med innehåll."
+  meta:
+    description: "Sökverktyg för Arbetsmiljöverkets föreskrifter (AFS). iAFS möjliggör sökning genom flera föreskrifter samtidigt."
+    rights: "Texter är hämtade från Arbetsmiljöverket webbsidor. Denna applikation återger endast utdrag i syfte att underlätta sökning."
+    og_title: "iAFS – sök i AFS"
+    og_description: "Sök i flera föreskrifter samtidigt från Arbetsmiljöverket."
+    twitter_card: "summary"

@@ -17,6 +17,9 @@ gem "stimulus-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
 
+# Rails I18n translations (including Swedish distance-of-time)
+gem "rails-i18n"
+
 # Background jobs backed by PostgreSQL
 gem "good_job"
 

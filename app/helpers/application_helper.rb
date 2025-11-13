@@ -233,4 +233,16 @@ module ApplicationHelper
     match = id.match(/(\d+)§/)
     match ? match[1].to_i : nil
   end
+  # Robots meta content based on environment
+  def robots_meta_content
+    ENV["ALLOW_INDEXING"] == "true" ? "index, follow" : "noindex, nofollow"
+  end
+
+  def meta_description
+    I18n.t("meta.description")
+  end
+
+  def meta_rights
+    I18n.t("meta.rights")
+  end
 end
