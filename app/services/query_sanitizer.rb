@@ -1,28 +1,49 @@
 class QuerySanitizer
-  # Rudimentary cleaning of user-provided search queries
-  # - force UTF-8, drop invalid bytes
-  # - strip HTML tags
-  # - remove zero-width and control characters
-  # - collapse whitespace
-  # - trim
+  # Dangerous patterns to catch in queries of 6+ chars
+  # Targets common XSS/injection vectors without affecting normal search
+  DANGEROUS_PATTERNS = [
+    /<script/i,
+    /javascript:/i,
+    /on\w+\s*=/i,  # e.g., onclick=, onload=
+    /eval\(/i,
+    /iframe/i
+  ].freeze
+
+  MIN_LENGTH_TO_SANITIZE = 6
+  SHORT_QUERY_LENGTH = 5
+
+  # Cleaning strategy:
+  # - Queries <= 5 chars: minimal cleaning (only UTF-8, trim, collapse whitespace)
+  # - Queries > 5 chars: full cleaning UNLESS it matches dangerous patterns exactly
+  #
+  # Rationale:
+  # - Short queries like "<" or "if" should pass through unsanitized for search
+  # - Longer queries are more likely to contain meaningful content, and we check
+  #   for specific high-risk patterns (script, javascript, onclick, eval, iframe)
+  # - Full cleaning (strip_tags, remove control chars) happens only for longer queries
+  #   without dangerous patterns
+  #
   # Returns a safe String (may be empty)
   def self.clean(input)
     s = input.to_s.dup
-    # Ensure UTF-8, drop invalid/undefined bytes
+
+    # Always: Ensure UTF-8, drop invalid/undefined bytes
     s = s.encode("UTF-8", invalid: :replace, undef: :replace, replace: "")
 
-    # Strip any HTML tags
-    s = ActionController::Base.helpers.strip_tags(s)
+    # Always: Trim and collapse whitespace
+    s = s.gsub(/\s+/, " ").strip
 
-    # Remove zero-width characters and general control chars
-    # Zero-width: U+200B..U+200D, U+2060, U+FEFF
-    s = s.gsub(/[\u200B-\u200D\u2060\uFEFF]/, "")
-    s = s.gsub(/[[:cntrl:]]/, " ")
+    # For short queries (5 chars or less), return early with minimal cleaning
+    return s if s.length <= SHORT_QUERY_LENGTH
 
-    # Collapse all whitespace to single spaces
-    s = s.gsub(/\s+/, " ")
+    # For longer queries, check for dangerous patterns
+    return "" if contains_dangerous_pattern?(s)
 
-    # Trim
-    s.strip
+    return s
+  end
+
+  # Check if query contains any dangerous patterns
+  def self.contains_dangerous_pattern?(query)
+    DANGEROUS_PATTERNS.any? { |pattern| pattern.match?(query) }
   end
 end

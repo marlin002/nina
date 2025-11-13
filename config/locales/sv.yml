@@ -56,7 +56,7 @@ sv:
     run_jobs_tip: "Kör scraping-jobben för att fylla sidan med innehåll."
   meta:
     description: "Sökverktyg för Arbetsmiljöverkets föreskrifter (AFS). iAFS möjliggör sökning genom flera föreskrifter samtidigt."
-    rights: "Originalt innehåll tillhör Arbetsmiljöverket. Denna applikation återger endast utdrag i syfte att underlätta sökning."
+    rights: "Texter är hämtade från Arbetsmiljöverket webbsidor. Denna applikation återger endast utdrag i syfte att underlätta sökning."
     og_title: "iAFS – sök i AFS"
     og_description: "Sök i flera föreskrifter samtidigt från Arbetsmiljöverket."
     twitter_card: "summary"
