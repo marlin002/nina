@@ -79,9 +79,14 @@ class ScrapesController < ApplicationController
       # Sort based on parameter
       @results = apply_sort(@results, @sort_by)
 
-      # Log search query with match count only if there are results
-      SearchQuery.log_search(@query, @results.size) if @results.any?
+      # Log search query with match count only for new searches (not sort operations)
+      # Only log if there are results AND no sort_by parameter is present
+      SearchQuery.log_search(@query, @results.size) if @results.any? && @sort_by.blank?
     end
+  end
+
+  def about
+    # Simple about page
   end
 
   def raw

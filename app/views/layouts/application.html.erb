@@ -26,6 +26,7 @@
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
 
@@ -45,7 +46,10 @@
     </script>
   </head>
 
-  <body>
-    <%= yield %>
+  <body class="bg-gray-50">
+    <%= render "shared/navigation" %>
+    <main class="container mx-auto mt-24 px-5 py-6">
+      <%= yield %>
+    </main>
   </body>
 </html>
