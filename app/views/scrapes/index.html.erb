@@ -1,49 +1,54 @@
 <% content_for :title, "iAFS" %>
 
-<div class="scrapes-header">
-  <h1>iAFS</h1>
-  <p class="subtitle">
-    <%= t('ui.tagline', article: ["en", "i", "din"].sample) %>
-  </p>
-  
-  <div class="search-inline">
-    <%= form_with url: search_scrapes_path, method: :get, local: true, class: "search-form" do %>
-      <%= text_field_tag :q, params[:q], placeholder: t('search.form.placeholder'), class: "input-text" %>
-      <%= submit_tag t('buttons.search'), class: "btn btn-primary" %>
-    <% end %>
+<div class="max-w-6xl mx-auto">
+  <div class="text-center mb-12">
+    <h1 class="text-5xl font-bold text-slate-800 mb-4">iAFS</h1>
+    <p class="text-xl text-slate-600">
+      <%= t('ui.tagline', article: ["en", "i", "din"].sample) %>
+    </p>
   </div>
-</div>
 
-<% if @recent_searches.any? || @popular_searches.any? %>
-  <div class="search-panels">
-    <% if @recent_searches.any? %>
-      <div class="search-panel">
-        <h3><%= t('headings.recent_searches') %></h3>
-        <ul class="search-list">
-          <% @recent_searches.each do |search| %>
-            <li>
-              <%= link_to "#{search.query} (#{search.match_count} #{t('nouns.hit', count: search.match_count)}) - #{time_ago_in_words(search.created_at)}", search_scrapes_path(q: search.query), class: "search-link" %>
-            </li>
-          <% end %>
-        </ul>
-      </div>
-    <% end %>
-    
-    <% if @popular_searches.any? %>
-      <div class="search-panel">
-        <h3><%= t('headings.popular_searches') %></h3>
-        <ol class="search-list numbered">
-          <% @popular_searches.each do |search| %>
-            <li>
-              <%= link_to "#{search.query} (#{search.match_count} #{t('nouns.hit', count: search.match_count)})", search_scrapes_path(q: search.query), class: "search-link" %>
-            </li>
-          <% end %>
-        </ol>
-      </div>
-    <% end %>
+  <% if @recent_searches.any? || @popular_searches.any? %>
+    <div class="grid md:grid-cols-2 gap-6 mb-8">
+      <% if @recent_searches.any? %>
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+          <h3 class="text-lg font-semibold text-slate-700 bg-slate-100 px-6 py-4 border-b border-slate-200">
+            <%= t('headings.recent_searches') %>
+          </h3>
+          <ul class="p-6 space-y-3">
+            <% @recent_searches.each do |search| %>
+              <li>
+                <%= link_to search_scrapes_path(q: search.query), class: "text-blue-600 hover:text-blue-800 hover:underline" do %>
+                  <span class="font-medium"><%= search.query %></span>
+                  <span class="text-sm text-slate-500">(<%= search.match_count %> <%= t('nouns.hit', count: search.match_count) %>) - <%= time_ago_in_words(search.created_at) %></span>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+      
+      <% if @popular_searches.any? %>
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+          <h3 class="text-lg font-semibold text-slate-700 bg-slate-100 px-6 py-4 border-b border-slate-200">
+            <%= t('headings.popular_searches') %>
+          </h3>
+          <ol class="p-6 space-y-3 list-decimal list-inside">
+            <% @popular_searches.each do |search| %>
+              <li>
+                <%= link_to search_scrapes_path(q: search.query), class: "text-blue-600 hover:text-blue-800 hover:underline" do %>
+                  <span class="font-medium"><%= search.query %></span>
+                  <span class="text-sm text-slate-500">(<%= search.match_count %> <%= t('nouns.hit', count: search.match_count) %>)</span>
+                <% end %>
+              </li>
+            <% end %>
+          </ol>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="text-center">
+    <%= link_to t('links.all_afs'), all_scrapes_path, class: "inline-block px-8 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-medium transition shadow-lg" %>
   </div>
-<% end %>
-
-<div class="view-all-regulations">
-  <%= link_to t('links.all_afs'), all_scrapes_path, class: "btn btn-info" %>
 </div>
