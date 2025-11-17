@@ -62,6 +62,7 @@ class ScrapesController < ApplicationController
           element_id: element.id,
           element_text: element.text_content,
           regulation: element.regulation,
+          chapter: element.chapter,
           section: element.section,
           appendix: element.appendix,
           is_general_recommendation: element.is_general_recommendation,
@@ -101,7 +102,17 @@ class ScrapesController < ApplicationController
     @general_recommendation_count = general_recommendation_count(@scrape.raw_html)
     @appendix_count = appendix_count(@scrape.raw_html)
 
-    render html: highlight(@scrape.raw_html, @query).html_safe, layout: "raw_content"
+    html = @scrape.raw_html.to_s
+
+    # If a specific element was clicked in the search results, try to focus that snippet
+    if params[:focus_element_id].present?
+      element = @scrape.elements.current.find_by(id: params[:focus_element_id])
+      html = inject_focus_snippet(html, element) if element
+    end
+
+    highlighted_html = highlight_raw_html(html, @query)
+
+    render html: highlighted_html.html_safe, layout: "raw_content"
   rescue ActiveRecord::RecordNotFound
     redirect_to scrapes_path, alert: "Scrape not found"
   end
@@ -168,13 +179,40 @@ class ScrapesController < ApplicationController
     parts.join(", ")
   end
 
+  # Wrap the first occurrence of an element's HTML snippet in a focus wrapper
+  # so the browser can scroll to and highlight it.
+  def inject_focus_snippet(html, element)
+    snippet = element&.html_snippet.to_s
+    return html if snippet.blank?
+
+    idx = html.index(snippet)
+    return html unless idx
+
+    before = html[0...idx]
+    after  = html[(idx + snippet.length)..] || ""
+
+    before + %(<span id="focus" class="element-focus">#{snippet}</span>) + after
+  end
+
+  # Lightweight highlighter for raw HTML that preserves existing tags
+  # (unlike ActionView::Helpers::TextHelper.highlight, which escapes HTML).
+  def highlight_raw_html(html, query)
+    query = query.to_s.strip
+    return html if query.blank?
+
+    pattern = Regexp.escape(query)
+    html.gsub(/(#{pattern})/i, '<mark>\1</mark>')
+  end
+
   # Apply sorting based on sort_by parameter
   def apply_sort(results, sort_by)
     case sort_by
     when "reference"
-      results.sort_by { |r| [ r[:regulation], sort_hierarchy_key(r) ] }
+      # Sort by complete reference: regulation (year+number), chapter, section, appendix
+      results.sort_by { |r| complete_reference_sort_key(r) }
     when "reference_desc"
-      results.sort_by { |r| [ r[:regulation], sort_hierarchy_key(r) ] }.reverse
+      # Sort by complete reference descending
+      results.sort_by { |r| complete_reference_sort_key(r) }.reverse
     when "relevance"
       # Default sort: by regulation then hierarchy (best for relevance)
       results.sort_by { |r| [ r[:reg_num].to_i, sort_hierarchy_key(r) ] }
@@ -182,6 +220,44 @@ class ScrapesController < ApplicationController
       # Default: by regulation then hierarchy
       results.sort_by { |r| [ r[:reg_num].to_i, sort_hierarchy_key(r) ] }
     end
+  end
+
+  # Create sort key based on complete reference for natural sorting
+  # Zero-pads regulation, chapter, and section numbers for proper numeric sorting
+  # e.g., "AFS 2023:01, 05 kap., 065 §" sorts before "AFS 2023:13, 02 kap., 010 §"
+  def complete_reference_sort_key(result)
+    parts = []
+    
+    # Regulation with zero-padded number (e.g., "AFS 2023:01")
+    reg_num_padded = result[:reg_num].to_i.to_s.rjust(2, '0')
+    parts << "AFS 2023:#{reg_num_padded}"
+    
+    if result[:is_transitional]
+      parts << "ÖB"
+    elsif result[:appendix].present?
+      # Appendix with zero-padding
+      appendix_padded = result[:appendix].to_s.rjust(2, '0')
+      parts << "Bilaga #{appendix_padded}"
+    else
+      # Chapter with zero-padding (if present)
+      if result[:chapter].present?
+        chapter_padded = result[:chapter].to_i.to_s.rjust(3, '0')
+        parts << "#{chapter_padded} kap."
+      end
+      
+      # Section with zero-padding (if present)
+      if result[:section].present?
+        section_padded = result[:section].to_i.to_s.rjust(3, '0')
+        parts << "#{section_padded} §"
+      end
+    end
+    
+    # Add AR if it's a general recommendation
+    if result[:is_general_recommendation] && result[:section].present?
+      parts << "AR"
+    end
+    
+    parts.join(", ")
   end
 
   # Create sort key for hierarchy (sections first, then subsections, then appendices)

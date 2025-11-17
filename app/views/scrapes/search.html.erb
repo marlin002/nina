@@ -16,14 +16,14 @@
               <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700 w-48">
                 <% if @sort_by == "reference_desc" %>
                   <%= link_to search_scrapes_path(q: @query, sort_by: "relevance"), class: "hover:text-blue-600" do %>
-                    <%= t('search.table.regulation') %> <span class="ml-1">▼</span>
+                    <%= t('search.table.reference') %> <span class="ml-1">▼</span>
                   <% end %>
                 <% elsif @sort_by == "reference" %>
                   <%= link_to search_scrapes_path(q: @query, sort_by: "reference_desc"), class: "hover:text-blue-600" do %>
-                    <%= t('search.table.regulation') %> <span class="ml-1">▲</span>
+                    <%= t('search.table.reference') %> <span class="ml-1">▲</span>
                   <% end %>
                 <% else %>
-                  <%= link_to t('search.table.regulation'), search_scrapes_path(q: @query, sort_by: "reference"), class: "hover:text-blue-600" %>
+                  <%= link_to t('search.table.reference'), search_scrapes_path(q: @query, sort_by: "reference"), class: "hover:text-blue-600" %>
                 <% end %>
               </th>
               <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700">
@@ -37,7 +37,7 @@
                 <td class="px-4 py-3 align-top">
                   <%# Display complete reference with hierarchy - MONOSPACED %>
                   <div class="font-mono text-sm">
-                    <%= link_to res[:regulation_name], raw_scrape_path(res[:scrape], q: @query), class: "text-blue-600 hover:text-blue-800 font-semibold", title: res[:subject] %>
+                    <%= link_to res[:regulation_name], raw_scrape_path(res[:scrape], q: @query, focus_element_id: res[:element_id], anchor: "focus"), class: "text-blue-600 hover:text-blue-800 font-semibold", title: res[:subject] %>
                     <% if res[:complete_reference] != res[:regulation_name] %>
                       <br><span class="text-slate-600"><%= res[:complete_reference].sub(res[:regulation_name], "").gsub(/^, /, "") %></span>
                     <% end %>
