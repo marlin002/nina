@@ -119,22 +119,33 @@
       0% { background-color: #fff3cd; }
       100% { background-color: transparent; }
     }
-    /* Make section signs (e.g., "1 §") display inline with their content */
+    /* Make section signs (e.g., "1 §") start on a new line with content on same line */
     .section-sign {
       display: inline;
       font-weight: 600;
       color: #2c3e50;
-      margin-right: 0.5em;
     }
-    /* Ensure paragraphs after section signs appear on the same line */
-    .section-sign + .paragraph,
-    .section-sign + div {
+    /* Force section sign to start on a new line using ::before */
+    .section-sign::before {
+      content: "";
+      display: block;
+      margin-top: 1.5em;
+    }
+    /* Make the paragraph div after section sign display inline */
+    .section-sign + .paragraph {
       display: inline;
     }
-    .section-sign + .paragraph p,
-    .section-sign + div p {
+    /* Keep paragraph content inline and remove default margins */
+    .section-sign + .paragraph > p {
       display: inline;
       margin: 0;
+    }
+    /* Handle lists and other elements within the paragraph */
+    .section-sign + .paragraph > ol,
+    .section-sign + .paragraph > ul,
+    .section-sign + .paragraph > div {
+      display: block;
+      margin-top: 0.5em;
     }
   </style>
 </head>
