@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>iAFS</title>
   <style>
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 80px; /* Space for fixed header if needed */
+    }
     body {
       font-family: Georgia, serif;
       max-width: 900px;
@@ -100,6 +104,37 @@
     }
     .regulation-content {
       /* Add some spacing from header */
+    }
+    .element-focus {
+      /* Base styling for focused snippet (non-target state) */
+    }
+    .element-focus:target {
+      background-color: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding-left: 15px;
+      margin-left: -15px;
+      animation: highlight-fade 3s ease-out;
+    }
+    @keyframes highlight-fade {
+      0% { background-color: #fff3cd; }
+      100% { background-color: transparent; }
+    }
+    /* Make section signs (e.g., "1 §") display inline with their content */
+    .section-sign {
+      display: inline;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-right: 0.5em;
+    }
+    /* Ensure paragraphs after section signs appear on the same line */
+    .section-sign + .paragraph,
+    .section-sign + div {
+      display: inline;
+    }
+    .section-sign + .paragraph p,
+    .section-sign + div p {
+      display: inline;
+      margin: 0;
     }
   </style>
 </head>

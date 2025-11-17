@@ -43,6 +43,7 @@ sv:
       too_long: "Sökfras får vara max 100 tecken."
     table:
       regulation: "Föreskrift"
+      reference: "Referens"
     empty:
       no_results: "Inga träffar"
       refine: "Försök att korta ner din fråga, eller skriv en ny."
