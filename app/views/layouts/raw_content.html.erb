@@ -119,6 +119,23 @@
       0% { background-color: #fff3cd; }
       100% { background-color: transparent; }
     }
+    /* Make section signs (e.g., "1 §") display inline with their content */
+    .section-sign {
+      display: inline;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-right: 0.5em;
+    }
+    /* Ensure paragraphs after section signs appear on the same line */
+    .section-sign + .paragraph,
+    .section-sign + div {
+      display: inline;
+    }
+    .section-sign + .paragraph p,
+    .section-sign + div p {
+      display: inline;
+      margin: 0;
+    }
   </style>
 </head>
 <body>
