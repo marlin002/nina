@@ -9,14 +9,23 @@
       <!-- Search Form -->
       <div class="flex-grow max-w-2xl">
         <%= form_with url: search_scrapes_path, method: :get, local: true, class: "flex gap-2" do %>
-          <%= text_field_tag :q, params[:q], placeholder: t('search.form.placeholder'), class: "flex-grow px-4 py-2 rounded-lg border border-slate-600 bg-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+          <%= text_field_tag :q, params[:q], placeholder: t('search.form.placeholder'), autofocus: true, class: "flex-grow px-4 py-2 rounded-lg border border-slate-600 bg-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" %>
           <%= submit_tag t('buttons.search'), class: "px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition cursor-pointer" %>
         <% end %>
       </div>
       
-      <!-- About Link -->
-      <div class="flex-shrink-0">
-        <%= link_to "Om", about_scrapes_path, class: "px-4 py-2 hover:bg-slate-700 rounded-lg transition" %>
+      <!-- Dropdown Menu -->
+      <div class="flex-shrink-0 relative group">
+        <button class="px-4 py-2 hover:bg-slate-700 rounded-lg transition flex items-center gap-2">
+          Meny
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+        <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+          <%= link_to "Om", about_scrapes_path, class: "block px-4 py-3 text-slate-700 hover:bg-slate-100 transition first:rounded-t-lg" %>
+          <%= link_to "Alla AFSar", all_scrapes_path, class: "block px-4 py-3 text-slate-700 hover:bg-slate-100 transition last:rounded-b-lg" %>
+        </div>
       </div>
     </div>
   </div>
