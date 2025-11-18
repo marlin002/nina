@@ -235,7 +235,7 @@ module ApplicationHelper
   end
   # Robots meta content based on environment
   def robots_meta_content
-    ENV["ALLOW_INDEXING"] == "true" ? "index, follow" : "noindex, nofollow"
+    ENV["ALLOW_INDEXING"] == "true" ? "index, nofollow" : "noindex, nofollow"
   end
 
   def meta_description

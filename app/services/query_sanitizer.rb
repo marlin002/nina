@@ -39,7 +39,7 @@ class QuerySanitizer
     # For longer queries, check for dangerous patterns
     return "" if contains_dangerous_pattern?(s)
 
-    return s
+    s
   end
 
   # Check if query contains any dangerous patterns

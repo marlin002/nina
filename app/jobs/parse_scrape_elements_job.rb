@@ -54,8 +54,8 @@ class ParseScrapeElementsJob < ApplicationJob
       # Extract element attributes
       css_path = build_css_path(child, parent_path)
       tag_name = child.name
-      element_class = child['class']
-      element_id = child['id']
+      element_class = child["class"]
+      element_id = child["id"]
       text_content = extract_text_content(child)
       html_snippet = child.to_html
 
@@ -127,24 +127,24 @@ class ParseScrapeElementsJob < ApplicationJob
 
   def find_preceding_transitional(element)
     element.xpath("preceding::h2[@id]").reverse_each do |h2|
-      id = h2['id'].to_s.downcase
+      id = h2["id"].to_s.downcase
       text = h2.text.strip.downcase
-      return h2 if id.include?('overgang') || text.include?('övergång')
-      return nil if id.start_with?('bilaga') || h2.text.match?(/^\d+\s+kap\.?/i)
+      return h2 if id.include?("overgang") || text.include?("övergång")
+      return nil if id.start_with?("bilaga") || h2.text.match?(/^\d+\s+kap\.?/i)
     end
     nil
   end
 
   def find_preceding_appendix(element)
     element.xpath("preceding::h2[@id]").reverse_each do |h2|
-      return h2 if h2['id'].to_s.downcase.start_with?('bilaga')
+      return h2 if h2["id"].to_s.downcase.start_with?("bilaga")
     end
     nil
   end
 
   def find_preceding_chapter(element)
     element.xpath("preceding::h2 | preceding::h3").reverse_each do |heading|
-      text = heading.text.strip.gsub(/[\u00A0\s]+/, ' ')
+      text = heading.text.strip.gsub(/[\u00A0\s]+/, " ")
       return heading if text.match?(/^\d+\s+kap\.?/i)
     end
     nil
@@ -155,7 +155,7 @@ class ParseScrapeElementsJob < ApplicationJob
   end
 
   def extract_chapter_number(chapter_heading)
-    text = chapter_heading.text.strip.gsub(/[\u00A0\s]+/, ' ')
+    text = chapter_heading.text.strip.gsub(/[\u00A0\s]+/, " ")
     match = text.match(/^(\d+)\s+kap\.?/i)
     match ? match[1].to_i : nil
   end
@@ -165,13 +165,13 @@ class ParseScrapeElementsJob < ApplicationJob
     match = text.match(/(\d+)\s*§/)
     return match[1].to_i if match
 
-    id = section_span['id'].to_s
+    id = section_span["id"].to_s
     match = id.match(/(\d+)§/)
     match ? match[1].to_i : nil
   end
 
   def extract_appendix_number(appendix_h2)
-    text = appendix_h2.text.strip.gsub(/[\u00A0\s]+/, ' ')
+    text = appendix_h2.text.strip.gsub(/[\u00A0\s]+/, " ")
     match = text.match(/Bilaga\s+(\d+|[A-Z])/i)
     match ? match[1] : nil
   end
@@ -195,8 +195,8 @@ class ParseScrapeElementsJob < ApplicationJob
 
   def build_css_path(element, parent_path)
     selector = element.name
-    selector += ".#{element['class'].split.join('.')}" if element['class']
-    selector += "##{element['id']}" if element['id']
+    selector += ".#{element['class'].split.join('.')}" if element["class"]
+    selector += "##{element['id']}" if element["id"]
 
     "#{parent_path} > #{selector}"
   end
