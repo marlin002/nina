@@ -227,36 +227,36 @@ class ScrapesController < ApplicationController
   # e.g., "AFS 2023:01, 05 kap., 065 §" sorts before "AFS 2023:13, 02 kap., 010 §"
   def complete_reference_sort_key(result)
     parts = []
-    
+
     # Regulation with zero-padded number (e.g., "AFS 2023:01")
-    reg_num_padded = result[:reg_num].to_i.to_s.rjust(2, '0')
+    reg_num_padded = result[:reg_num].to_i.to_s.rjust(2, "0")
     parts << "AFS 2023:#{reg_num_padded}"
-    
+
     if result[:is_transitional]
       parts << "ÖB"
     elsif result[:appendix].present?
       # Appendix with zero-padding
-      appendix_padded = result[:appendix].to_s.rjust(2, '0')
+      appendix_padded = result[:appendix].to_s.rjust(2, "0")
       parts << "Bilaga #{appendix_padded}"
     else
       # Chapter with zero-padding (if present)
       if result[:chapter].present?
-        chapter_padded = result[:chapter].to_i.to_s.rjust(3, '0')
+        chapter_padded = result[:chapter].to_i.to_s.rjust(3, "0")
         parts << "#{chapter_padded} kap."
       end
-      
+
       # Section with zero-padding (if present)
       if result[:section].present?
-        section_padded = result[:section].to_i.to_s.rjust(3, '0')
+        section_padded = result[:section].to_i.to_s.rjust(3, "0")
         parts << "#{section_padded} §"
       end
     end
-    
+
     # Add AR if it's a general recommendation
     if result[:is_general_recommendation] && result[:section].present?
       parts << "AR"
     end
-    
+
     parts.join(", ")
   end
 

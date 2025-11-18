@@ -13,5 +13,4 @@ class SearchQuery < ApplicationRecord
 
     create!(query: cleaned, match_count: match_count)
   end
-
 end
