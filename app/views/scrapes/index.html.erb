@@ -18,7 +18,7 @@
           <ul class="p-6 space-y-3">
             <% @recent_searches.each do |search| %>
               <li>
-                <%= link_to search_scrapes_path(q: search.query), class: "text-blue-600 hover:text-blue-800 hover:underline" do %>
+                <%= link_to search_scrapes_path(q: search.query), class: "text-blue-600 hover:text-blue-800 hover:underline", rel: "nofollow" do %>
                   <span class="font-medium"><%= search.query %></span>
                   <span class="text-sm text-slate-500">(<%= search.match_count %> <%= t('nouns.hit', count: search.match_count) %>) - <%= time_ago_in_words(search.created_at) %></span>
                 <% end %>
@@ -36,7 +36,7 @@
           <ol class="p-6 space-y-3 list-decimal list-inside">
             <% @popular_searches.each do |search| %>
               <li>
-                <%= link_to search_scrapes_path(q: search.query), class: "text-blue-600 hover:text-blue-800 hover:underline" do %>
+                <%= link_to search_scrapes_path(q: search.query), class: "text-blue-600 hover:text-blue-800 hover:underline", rel: "nofollow" do %>
                   <span class="font-medium"><%= search.query %></span>
                   <span class="text-sm text-slate-500">(<%= search.match_count %> <%= t('nouns.hit', count: search.match_count) %>)</span>
                 <% end %>

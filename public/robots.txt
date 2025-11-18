@@ -1,5 +1,5 @@
 # See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
 User-agent: *
 Allow: /
-# Block raw HTML views from being indexed
-Disallow: /scrapes/*/raw
+# Block searches
+Disallow: /search*
