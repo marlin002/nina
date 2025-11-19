@@ -106,18 +106,19 @@
       /* Add some spacing from header */
     }
     .element-focus {
-      /* Base styling for focused snippet (non-target state) */
-    }
-    .element-focus:target {
+      display: block;
       background-color: #fff3cd;
       border-left: 4px solid #ffc107;
-      padding-left: 15px;
-      margin-left: -15px;
-      animation: highlight-fade 3s ease-out;
+      padding: 10px 15px;
+      margin: 15px 0;
+      border-radius: 4px;
     }
-    @keyframes highlight-fade {
-      0% { background-color: #fff3cd; }
-      100% { background-color: transparent; }
+    .element-focus:target {
+      animation: highlight-pulse 2s ease-out;
+    }
+    @keyframes highlight-pulse {
+      0%, 100% { background-color: #fff3cd; }
+      50% { background-color: #ffe69c; }
     }
     /* Make section signs (e.g., "1 §") start on a new line with content on same line */
     .section-sign {
