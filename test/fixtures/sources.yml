@@ -1,0 +1,7 @@
+one:
+  url: "https://www.av.se/arbetsmiljoarbete-och-inspektioner/publikationer/foreskrifter/organisatorisk-och-social-arbetsmiljo-afs-20151/"
+  settings: null
+  current: true
+  version: 1
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>

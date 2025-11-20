@@ -1,0 +1,19 @@
+one:
+  scrape: one
+  tag_name: "p"
+  element_class: null
+  element_id: null
+  text_content: "Test content about arbetsmiljö"
+  html_snippet: "<p>Test content about arbetsmiljö</p>"
+  regulation: "AFS 2015:1"
+  chapter: 1
+  section: 1
+  appendix: null
+  is_transitional: false
+  is_general_recommendation: false
+  css_path: "body > p"
+  position_in_parent: 0
+  version: 1
+  current: true
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>

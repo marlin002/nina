@@ -1,0 +1,10 @@
+one:
+  source: one
+  url: "https://www.av.se/arbetsmiljoarbete-och-inspektioner/publikationer/foreskrifter/organisatorisk-och-social-arbetsmiljo-afs-20151/"
+  raw_html: "<html><body><p>Test content about arbetsmiljö</p></body></html>"
+  title: "Organisatorisk och social arbetsmiljö"
+  fetched_at: <%= 1.day.ago %>
+  current: true
+  version: 1
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>
