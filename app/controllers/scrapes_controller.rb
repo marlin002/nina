@@ -8,7 +8,7 @@ class ScrapesController < ApplicationController
 
     # Sort by regulation number numerically (AFS 2023:1, 2023:2, etc.)
     @scrapes = scrapes_unsorted.sort_by do |scrape|
-      regulation_number(scrape.source.url)
+      regulation_number(scrape.source.url).to_i
     end
 
     @stats = {
@@ -26,9 +26,9 @@ class ScrapesController < ApplicationController
   def all
     scrapes_unsorted = Scrape.joins(:source).includes(:source)
 
-    # Sort by regulation number numerically (AFS 2023:1, 2023:2, etc.)
+    # Sort by regulation number numerically with zero-padding (AFS 2023:01, 2023:02, etc.)
     @scrapes = scrapes_unsorted.sort_by do |scrape|
-      regulation_number(scrape.source.url)
+      regulation_number(scrape.source.url).to_i
     end
 
     @stats = {
