@@ -56,4 +56,51 @@ class ScrapesControllerTest < ActionDispatch::IntegrationTest
     # No search should be logged (no results + sort_by present)
     assert_equal initial_count, SearchQuery.count
   end
+
+  test "regex search is detected and processed" do
+    source = sources(:one)
+    scrape = scrapes(:one)
+    element = elements(:one)
+
+    get search_scrapes_path, params: { q: "/test/" }
+
+    assert_response :success
+    assert_not_nil assigns(:regex_results)
+    assert_nil assigns(:results).presence
+  end
+
+  test "regex search does not log" do
+    source = sources(:one)
+    scrape = scrapes(:one)
+    element = elements(:one)
+
+    initial_count = SearchQuery.count
+
+    get search_scrapes_path, params: { q: "/arbetsmiljö/" }
+
+    assert_response :success
+    # Regex searches should never be logged
+    assert_equal initial_count, SearchQuery.count
+  end
+
+  test "invalid regex shows error" do
+    get search_scrapes_path, params: { q: "/[unclosed/" }
+
+    assert_response :success
+    assert_not_nil assigns(:query_error)
+    assert_nil assigns(:regex_results)
+  end
+
+  test "normal search still works after adding regex support" do
+    source = sources(:one)
+    scrape = scrapes(:one)
+    element = elements(:one)
+
+    get search_scrapes_path, params: { q: "arbetsmiljö" }
+
+    assert_response :success
+    assert_nil assigns(:regex_results)
+    # Normal search should return results array
+    assert_not_nil assigns(:results)
+  end
 end

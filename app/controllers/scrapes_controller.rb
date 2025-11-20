@@ -44,6 +44,7 @@ class ScrapesController < ApplicationController
     @query = QuerySanitizer.clean(params[:q])
     @sort_by = params[:sort_by].to_s.strip
     @results = []
+    @regex_results = nil
 
     # Validate query length (min 2, max 100 characters)
     if @query.present? && @query.length > 100
@@ -52,37 +53,51 @@ class ScrapesController < ApplicationController
     end
 
     if @query.present?
-      # Search elements for matching text content
-      search_service = ElementSearchService.new(limit: 500)
-      elements = search_service.search(@query)
+      # Check if this is a regex search
+      if RegexSearchService.regex_search?(@query)
+        # Execute regex search
+        regex_service = RegexSearchService.new(limit: 500)
+        @regex_results = regex_service.search(@query)
+        
+        # Set error if regex search failed
+        if @regex_results[:error].present?
+          @query_error = I18n.t(@regex_results[:error])
+          @regex_results = nil
+        end
+        # Note: Regex searches are NOT logged (like sorted searches)
+      else
+        # Normal search: use ElementSearchService
+        search_service = ElementSearchService.new(limit: 500)
+        elements = search_service.search(@query)
 
-      # Map elements to result hashes with hierarchy info
-      @results = elements.map do |element|
-        {
-          element_id: element.id,
-          element_text: element.text_content,
-          regulation: element.regulation,
-          chapter: element.chapter,
-          section: element.section,
-          appendix: element.appendix,
-          is_general_recommendation: element.is_general_recommendation,
-          is_transitional: element.is_transitional,
-          construct_type: determine_construct_type(element),
-          hierarchy_label: format_hierarchy_label(element),
-          complete_reference: format_complete_reference(element),
-          scrape: element.scrape,
-          subject: regulation_title_subject(element.scrape.title),
-          regulation_name: regulation_name(element.scrape.source.url),
-          reg_num: extract_regulation_number(element.scrape.source.url)
-        }
+        # Map elements to result hashes with hierarchy info
+        @results = elements.map do |element|
+          {
+            element_id: element.id,
+            element_text: element.text_content,
+            regulation: element.regulation,
+            chapter: element.chapter,
+            section: element.section,
+            appendix: element.appendix,
+            is_general_recommendation: element.is_general_recommendation,
+            is_transitional: element.is_transitional,
+            construct_type: determine_construct_type(element),
+            hierarchy_label: format_hierarchy_label(element),
+            complete_reference: format_complete_reference(element),
+            scrape: element.scrape,
+            subject: regulation_title_subject(element.scrape.title),
+            regulation_name: regulation_name(element.scrape.source.url),
+            reg_num: extract_regulation_number(element.scrape.source.url)
+          }
+        end
+
+        # Sort based on parameter
+        @results = apply_sort(@results, @sort_by)
+
+        # Log search query with match count only for new searches (not sort operations)
+        # Only log if there are results AND no sort_by parameter is present
+        SearchQuery.log_search(@query, @results.size) if @results.any? && @sort_by.blank?
       end
-
-      # Sort based on parameter
-      @results = apply_sort(@results, @sort_by)
-
-      # Log search query with match count only for new searches (not sort operations)
-      # Only log if there are results AND no sort_by parameter is present
-      SearchQuery.log_search(@query, @results.size) if @results.any? && @sort_by.blank?
     end
   end
 
