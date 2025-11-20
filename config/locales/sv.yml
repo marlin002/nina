@@ -41,9 +41,18 @@ sv:
       placeholder: "Sökfras (t.ex. hjälm, kompetens, fordon)"
     errors:
       too_long: "Sökfras får vara max 100 tecken."
+      regex_invalid: "Ogiltigt regex-mönster. Kontrollera syntaxen."
+      regex_timeout: "Sökningen tog för lång tid. Prova ett enklare mönster."
+      regex_empty: "Tomt regex-mönster."
     table:
       regulation: "Föreskrift"
       reference: "Referens"
+    regex:
+      matched_string: "Matchad sträng"
+      count: "Antal"
+      unique_matches: "unika matchningar"
+      total_occurrences: "förekomster totalt"
+      no_matches_tip: "Försök med ett annat regex-mönster."
     empty:
       no_results: "Inga träffar"
       refine: "Försök att korta ner din fråga, eller skriv en ny."
