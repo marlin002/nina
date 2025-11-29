@@ -15,6 +15,7 @@ Rails.application.routes.draw do
       get :search
       get :all
       get :about
+      get :dev_reference_lookup
     end
     member do
       get :raw
