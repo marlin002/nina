@@ -105,6 +105,10 @@ class ScrapesController < ApplicationController
     # Simple about page
   end
 
+  def api_info
+    # API documentation and sandbox page
+  end
+
   def dev_reference_lookup
     @reference = params[:reference].to_s.strip
     @result = nil
