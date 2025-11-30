@@ -387,6 +387,7 @@ class ScrapesController < ApplicationController
 
     # Add chapter filter if present
     query = query.where(chapter: parsed[:chapter]) if parsed[:chapter].present?
+    query = query.where(chapter: nil) unless parsed[:chapter].present?
 
     # Add section filter if present
     query = query.where(section: parsed[:section]) if parsed[:section].present?
@@ -401,7 +402,25 @@ class ScrapesController < ApplicationController
     # Only select elements that have text_content
     query = query.where.not(text_content: nil).where.not(text_content: "")
 
-    query.order(:is_general_recommendation, :position_in_parent, :id)
+    # Prefer <p> over list items and containers, and de-duplicate identical text within the section
+    tag_pref_sql = <<~SQL.squish
+      CASE elements.tag_name
+        WHEN 'p'  THEN 0
+        WHEN 'li' THEN 1
+        WHEN 'td' THEN 2
+        WHEN 'th' THEN 3
+        WHEN 'div' THEN 8
+        ELSE 9
+      END
+    SQL
+
+    # Wrap in subquery to avoid DISTINCT ON issues with count
+    distinct_query = query
+      .select("DISTINCT ON (elements.text_content) elements.*")
+      .order(Arel.sql("elements.text_content, #{tag_pref_sql}, elements.is_general_recommendation, elements.position_in_parent NULLS FIRST, elements.id"))
+      .to_sql
+
+    Element.from("(#{distinct_query}) AS elements")
   end
 
   # Find the previous section for navigation
