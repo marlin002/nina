@@ -1,0 +1,23 @@
+.dev-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff4e5; /* amber-ish; adjust for contrast */
+  color: #663c00;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  font-size: 0.95rem;
+  position: relative;
+  z-index: 0;
+}
+.dev-banner__content a { text-decoration: underline; color: inherit; font-weight: 600; }
+.dev-banner__dismiss {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: inherit;
+}
+@media (max-width: 600px) {
+  .dev-banner { font-size: 0.9rem; padding: 0.5rem; }
+}
