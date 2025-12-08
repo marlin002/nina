@@ -320,8 +320,11 @@ class ParseScrapeElementsJob < ApplicationJob
       # These are just styling containers (e.g. div.paragraph containing a <p>)
       klass = node["class"].to_s
       
-      # Skip common wrapper classes
-      return false if klass.match?(/\b(paragraph|general-recommendation|provision|document|root|rules)\b/)
+      # Skip common wrapper classes (including dialog wrappers and table overlays)
+      # Using word boundaries (\b) for most, but provision__ classes need special handling due to hyphens
+      return false if klass.match?(/\b(paragraph|general-recommendation|document|root|rules)\b/)
+      return false if klass.include?("provision__dialog") || klass.include?("provision__table-overlay")
+      return false if klass == "provision" || klass.start_with?("provision ")
       
       # For other divs, only store if they have a meaningful class
       klass.present?
