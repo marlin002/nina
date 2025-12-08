@@ -4,4 +4,4 @@ Allow: /
 Allow: /scrapes/about
 Allow: /scrapes/all
 # Block searches
-Disallow: /search*
+Disallow: /scrapes/search*

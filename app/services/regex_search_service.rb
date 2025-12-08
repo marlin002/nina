@@ -29,7 +29,7 @@ class RegexSearchService
     # Execute database query with timeout protection
     begin
       results = execute_regex_query(pattern)
-      
+
       total_unique = results.length
       total_occurrences = results.sum { |r| r[:count] }
 

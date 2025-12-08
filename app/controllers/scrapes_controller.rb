@@ -58,7 +58,7 @@ class ScrapesController < ApplicationController
         # Execute regex search
         regex_service = RegexSearchService.new(limit: 500)
         @regex_results = regex_service.search(@query)
-        
+
         # Set error if regex search failed
         if @regex_results[:error].present?
           @query_error = I18n.t(@regex_results[:error])
