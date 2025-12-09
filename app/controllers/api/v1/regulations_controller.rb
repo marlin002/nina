@@ -47,14 +47,14 @@ module Api
 
         raise ArgumentError, "Invalid section parameter" if section < 1
 
-        content_html = RegulationContentBuilder.section_html(
+        content = RegulationContentBuilder.section_content(
           year: year,
           number: number,
           chapter: nil,
           section: section
         )
 
-        if content_html.nil?
+        if content.nil?
           raise ActiveRecord::RecordNotFound, "Section not found: AFS #{year}:#{number}, § #{section}"
         end
 
@@ -65,7 +65,8 @@ module Api
           chapter: nil,
           section: section,
           kind: "section",
-          content_html: content_html
+          provision: content[:provision],
+          general_advice: content[:general_advice]
         }
       end
 
@@ -79,14 +80,14 @@ module Api
         raise ArgumentError, "Invalid chapter parameter" if chapter < 1
         raise ArgumentError, "Invalid section parameter" if section < 1
 
-        content_html = RegulationContentBuilder.section_html(
+        content = RegulationContentBuilder.section_content(
           year: year,
           number: number,
           chapter: chapter,
           section: section
         )
 
-        if content_html.nil?
+        if content.nil?
           raise ActiveRecord::RecordNotFound, "Section not found: AFS #{year}:#{number}, #{chapter} kap., § #{section}"
         end
 
@@ -97,7 +98,8 @@ module Api
           chapter: chapter,
           section: section,
           kind: "section",
-          content_html: content_html
+          provision: content[:provision],
+          general_advice: content[:general_advice]
         }
       end
 

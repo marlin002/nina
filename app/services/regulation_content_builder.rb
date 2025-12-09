@@ -1,11 +1,11 @@
 class RegulationContentBuilder
-  # Build HTML content for a section (including general recommendations)
+  # Build content for a section with separate provision and general_advice
   # @param year [Integer] Year
   # @param number [Integer] Number
   # @param chapter [Integer, nil] Chapter number (nil for regulations without chapters)
   # @param section [Integer] Section number
-  # @return [String, nil] HTML content or nil if section not found
-  def self.section_html(year:, number:, chapter: nil, section:)
+  # @return [Hash, nil] Hash with :provision and :general_advice keys, or nil if section not found
+  def self.section_content(year:, number:, chapter: nil, section:)
     code = Regulations::Code.from_year_and_number(year, number)
 
     # Find elements for this section
@@ -18,25 +18,30 @@ class RegulationContentBuilder
     ar_elements = elements.where(is_general_recommendation: true)
                         .order(:position_in_parent, :id)
 
-    # Build HTML: normative content first, then AR
-    html_parts = []
-    
-    # Normative text
-    normative_html = normative_elements.pluck(:html_snippet).join("\n")
-    html_parts << normative_html if normative_html.present?
+    # Build provision HTML
+    provision_html = normative_elements.pluck(:html_snippet).join("\n")
+    provision_html = nil if provision_html.blank?
 
-    # General recommendations (if any)
+    # Build general_advice HTML (excluding "Allmänna råd" heading)
+    general_advice_html = nil
     if ar_elements.any?
-      ar_html = ar_elements.pluck(:html_snippet).join("\n")
-      # Wrap in general-recommendation div if not already wrapped
-      if ar_html.present? && !ar_html.include?('class="general-recommendation"')
-        html_parts << %(<div class="general-recommendation">\n#{ar_html}\n</div>)
-      else
-        html_parts << ar_html
+      # Filter out the "Allmänna råd" heading element
+      ar_elements_without_heading = ar_elements.reject do |element|
+        element.tag_name == 'div' && 
+        element.element_class == 'h2' && 
+        element.text_content&.strip&.match?(/^Allmänna råd$/i)
+      end
+      
+      if ar_elements_without_heading.any?
+        ar_html = ar_elements_without_heading.map(&:html_snippet).join("\n")
+        general_advice_html = ar_html if ar_html.present?
       end
     end
 
-    html_parts.join("\n")
+    {
+      provision: provision_html,
+      general_advice: general_advice_html
+    }
   end
 
   # Build HTML content for an appendix

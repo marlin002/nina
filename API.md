@@ -73,7 +73,7 @@ For regulations without chapters (e.g., AFS 2023:1), the response includes:
 
 `GET /api/v1/regulations/:year/:number/chapters/:chapter/sections/:section`
 
-Returns the full HTML content of a section, including its Allmänna råd (general recommendations) if present.
+Returns the content of a section with separate provision and general advice (Allmänna råd) HTML.
 
 **Parameters:**
 - `year`: Regulation year
@@ -92,9 +92,12 @@ Returns the full HTML content of a section, including its Allmänna råd (genera
   "chapter": 2,
   "section": 4,
   "kind": "section",
-  "content_html": "<p> Byggherren ska ha rutiner...</p>\n<div class=\"general-recommendation\">...</div>"
+  "provision": "<p> Byggherren ska ha rutiner...</p>",
+  "general_advice": "<div class=\"general-recommendation\">...</div>"
 }
 ```
+
+Note: `general_advice` will be `null` if the section has no Allmänna råd.
 
 #### Section without Chapter
 
@@ -118,9 +121,12 @@ For regulations that don't use chapters (e.g., AFS 2023:1).
   "chapter": null,
   "section": 8,
   "kind": "section",
-  "content_html": "<p> Arbetsgivaren ska se till...</p>..."
+  "provision": "<p> Arbetsgivaren ska se till...</p>",
+  "general_advice": null
 }
 ```
+
+Note: `general_advice` will be `null` if the section has no Allmänna råd.
 
 ### Get Appendix Content
 
@@ -175,6 +181,7 @@ Regulation, section, or appendix not found.
 
 - All content is returned in Swedish
 - HTML content includes semantic structure (paragraphs, lists, etc.)
-- Allmänna råd (AR) are included within section content_html when present
+- Section endpoints return separate `provision` and `general_advice` fields (both contain HTML)
+- `general_advice` will be `null` if a section has no Allmänna råd
 - The API always returns the current version of regulations (historical versions not available)
 - No authentication required
