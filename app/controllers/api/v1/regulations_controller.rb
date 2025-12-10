@@ -65,8 +65,9 @@ module Api
           chapter: nil,
           section: section,
           kind: "section",
-          provision: content[:provision],
-          general_advice: content[:general_advice]
+          normative_requirement: content[:normative_requirement],
+          authoritative_guidance: content[:authoritative_guidance],
+          informational_guidance: content[:informational_guidance]
         }
       end
 
@@ -98,8 +99,9 @@ module Api
           chapter: chapter,
           section: section,
           kind: "section",
-          provision: content[:provision],
-          general_advice: content[:general_advice]
+          normative_requirement: content[:normative_requirement],
+          authoritative_guidance: content[:authoritative_guidance],
+          informational_guidance: content[:informational_guidance]
         }
       end
 

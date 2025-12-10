@@ -18,12 +18,12 @@ class RegulationContentBuilder
     ar_elements = elements.where(is_general_recommendation: true)
                         .order(:position_in_parent, :id)
 
-    # Build provision HTML
-    provision_html = normative_elements.pluck(:html_snippet).join("\n")
-    provision_html = nil if provision_html.blank?
+    # Build normative requirement HTML
+    normative_html = normative_elements.pluck(:html_snippet).join("\n")
+    normative_html = nil if normative_html.blank?
 
-    # Build general_advice HTML (excluding "Allmänna råd" heading)
-    general_advice_html = nil
+    # Build authoritative guidance HTML (excluding "Allmänna råd" heading)
+    authoritative_html = nil
     if ar_elements.any?
       # Filter out the "Allmänna råd" heading element
       ar_elements_without_heading = ar_elements.reject do |element|
@@ -34,13 +34,14 @@ class RegulationContentBuilder
       
       if ar_elements_without_heading.any?
         ar_html = ar_elements_without_heading.map(&:html_snippet).join("\n")
-        general_advice_html = ar_html if ar_html.present?
+        authoritative_html = ar_html if ar_html.present?
       end
     end
 
     {
-      provision: provision_html,
-      general_advice: general_advice_html
+      normative_requirement: normative_html,
+      authoritative_guidance: authoritative_html,
+      informational_guidance: nil
     }
   end
 

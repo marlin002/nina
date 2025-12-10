@@ -73,7 +73,7 @@ For regulations without chapters (e.g., AFS 2023:1), the response includes:
 
 `GET /api/v1/regulations/:year/:number/chapters/:chapter/sections/:section`
 
-Returns the content of a section with separate provision and general advice (Allmänna råd) HTML.
+Returns the content of a section with separate fields for different content types.
 
 **Parameters:**
 - `year`: Regulation year
@@ -92,12 +92,16 @@ Returns the content of a section with separate provision and general advice (All
   "chapter": 2,
   "section": 4,
   "kind": "section",
-  "provision": "<p> Byggherren ska ha rutiner...</p>",
-  "general_advice": "<div class=\"general-recommendation\">...</div>"
+  "normative_requirement": "<p> Byggherren ska ha rutiner...</p>",
+  "authoritative_guidance": "<p>Additional guidance content...</p>",
+  "informational_guidance": null
 }
 ```
 
-Note: `general_advice` will be `null` if the section has no Allmänna råd.
+**Content Types:**
+- `normative_requirement`: Legally binding requirements (föreskrifter)
+- `authoritative_guidance`: General recommendations (Allmänna råd) - will be `null` if none exist
+- `informational_guidance`: Other informational content - currently always `null`
 
 #### Section without Chapter
 
@@ -121,12 +125,11 @@ For regulations that don't use chapters (e.g., AFS 2023:1).
   "chapter": null,
   "section": 8,
   "kind": "section",
-  "provision": "<p> Arbetsgivaren ska se till...</p>",
-  "general_advice": null
+  "normative_requirement": "<p> Arbetsgivaren ska se till...</p>",
+  "authoritative_guidance": null,
+  "informational_guidance": null
 }
 ```
-
-Note: `general_advice` will be `null` if the section has no Allmänna råd.
 
 ### Get Appendix Content
 
@@ -181,7 +184,9 @@ Regulation, section, or appendix not found.
 
 - All content is returned in Swedish
 - HTML content includes semantic structure (paragraphs, lists, etc.)
-- Section endpoints return separate `provision` and `general_advice` fields (both contain HTML)
-- `general_advice` will be `null` if a section has no Allmänna råd
+- Section endpoints return three content fields:
+  - `normative_requirement`: Legally binding requirements (HTML)
+  - `authoritative_guidance`: General recommendations/Allmänna råd (HTML, `null` if none exist)
+  - `informational_guidance`: Other informational content (currently always `null`)
 - The API always returns the current version of regulations (historical versions not available)
 - No authentication required
