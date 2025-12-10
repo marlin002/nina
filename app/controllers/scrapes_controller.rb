@@ -58,7 +58,7 @@ class ScrapesController < ApplicationController
         # Execute regex search
         regex_service = RegexSearchService.new(limit: 500)
         @regex_results = regex_service.search(@query)
-        
+
         # Set error if regex search failed
         if @regex_results[:error].present?
           @query_error = I18n.t(@regex_results[:error])
@@ -120,13 +120,13 @@ class ScrapesController < ApplicationController
       begin
         # Parse the reference string (e.g., "AFS 2023:10, 13 kap., 10 §")
         parsed = parse_reference(@reference)
-        
+
         if parsed[:error]
           @error = parsed[:error]
         else
           # Find elements matching the reference directly
           elements = find_elements_by_parsed_reference(parsed)
-          
+
           if elements.empty?
             @error = "No elements found for reference: #{parsed[:regulation]}" +
                      (parsed[:chapter] ? ", #{parsed[:chapter]} kap." : "") +
@@ -143,7 +143,7 @@ class ScrapesController < ApplicationController
               html: elements.map(&:html_snippet).join("\n"),
               text: elements.map(&:text_content).join("\n")
             }
-            
+
             # Find previous and next sections for navigation
             if parsed[:section].present?
               @prev_reference = find_previous_section(parsed)

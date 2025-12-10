@@ -36,7 +36,7 @@ class RegulationStructureService
       .pluck(:chapter, :section)
 
     normalized = raw_pairs.map do |ch, sec|
-      [safe_int(ch), safe_int(sec)]
+      [ safe_int(ch), safe_int(sec) ]
     end.reject { |ch, sec| ch.nil? || sec.nil? }
 
     grouped = normalized.group_by { |ch, _sec| ch }

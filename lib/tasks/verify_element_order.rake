@@ -1,7 +1,7 @@
 namespace :verify do
   desc "Verify that elements can be rebuilt in correct order from raw_html"
   task element_order: :environment do
-    require 'nokogiri'
+    require "nokogiri"
 
     # Get a sample of current scrapes with sections
     scrapes = Scrape.joins(:elements)
@@ -57,15 +57,15 @@ namespace :verify do
 
         # Normalize text: strip and collapse whitespace (including non-breaking spaces)
         normalize = ->(text) { text.strip.gsub(/[\u00A0\s]+/, " ") }
-        
+
         # Get normalized text from elements
         element_texts = elements.map { |e| normalize.call(e.text_content || "") }.reject(&:empty?)
-        
+
         # Parse the HTML and extract text from the section in document order
         # Find all text nodes in the HTML that match our element texts
         html_doc = Nokogiri::HTML(scrape.raw_html)
         all_html_texts = html_doc.xpath("//text()").map { |node| normalize.call(node.text) }.reject(&:empty?)
-        
+
         # Find positions of our element texts in the HTML text sequence
         positions = []
         element_texts.each_with_index do |elem_text, idx|
@@ -80,13 +80,13 @@ namespace :verify do
             end
           end
         end
-        
+
         # Check if positions are in ascending order
         is_ordered = positions.each_cons(2).all? { |a, b| a[:html_pos] <= b[:html_pos] }
-        
+
         coverage = (positions.size.to_f / element_texts.size * 100).round(1)
         puts "  Matched #{positions.size}/#{element_texts.size} elements (#{coverage}%)"
-        
+
         if is_ordered
           puts "  ✓ Elements are in correct order!"
         else
@@ -102,7 +102,7 @@ namespace :verify do
         # Show first 3 elements as sample
         puts "\n  First 3 elements in order:"
         elements.limit(3).each_with_index do |elem, i|
-          text_preview = elem.text_content&.strip&.gsub(/\s+/, ' ')&.[](0..60) || "(empty)"
+          text_preview = elem.text_content&.strip&.gsub(/\s+/, " ")&.[](0..60) || "(empty)"
           puts "    #{i+1}. [#{elem.tag_name}] pos=#{elem.position_in_parent}: #{text_preview}..."
         end
       end

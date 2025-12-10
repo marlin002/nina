@@ -74,7 +74,7 @@ class ParseScrapeElementsJob < ApplicationJob
 
       # Find the boundary: start from section_sign, end at next section_sign or major structure
       next_section_sign = section_signs[idx + 1]
-      
+
       # Parse all content from this section sign up to the next boundary
       parse_section_block(
         section_sign: section_sign,
@@ -97,10 +97,10 @@ class ParseScrapeElementsJob < ApplicationJob
     loop do
       current = current.next_element
       break unless current
-      
+
       # Stop at next section sign
       break if current == next_section_sign
-      
+
       # Stop at major structural boundaries
       if current.name == "h2"
         # Check if it's a new chapter, appendix, or transitional heading
@@ -128,7 +128,7 @@ class ParseScrapeElementsJob < ApplicationJob
 
       # Create element for this node (assign to current section)
       is_ar = current.ancestors(".general-recommendation").any?
-      
+
       create_element_from_node(
         current,
         regulation: @regulation_code,
@@ -157,19 +157,19 @@ class ParseScrapeElementsJob < ApplicationJob
   # Check if h2 is a major structural heading (chapter, appendix, transitional)
   def is_major_structure_heading?(h2)
     return false unless h2.name == "h2"
-    
+
     text = h2.text.strip.downcase
     id = h2["id"].to_s.downcase
 
     # Chapter heading
     return true if text.match?(/^\d+\s+kap\.?/i)
-    
+
     # Appendix
     return true if id.start_with?("bilaga") || text.start_with?("bilaga")
-    
+
     # Transitional
     return true if id.include?("overgang") || text.include?("övergång")
-    
+
     false
   end
 
@@ -256,7 +256,7 @@ class ParseScrapeElementsJob < ApplicationJob
     # Check if this is a content-bearing element worth storing
     if content_bearing_element?(node)
       text_content = extract_searchable_text(node)
-      
+
       # Only create element if there's text
       if text_content.present?
         Element.create!(
@@ -284,10 +284,10 @@ class ParseScrapeElementsJob < ApplicationJob
     child_position = 0
     node.children.each do |child|
       next unless child.is_a?(Nokogiri::XML::Element)
-      
+
       # Check if child is in AR block
       child_is_ar = child.ancestors(".general-recommendation").any?
-      
+
       create_element_from_node(
         child,
         regulation: regulation,
@@ -319,13 +319,13 @@ class ParseScrapeElementsJob < ApplicationJob
       # Skip wrapper divs that only contain other content-bearing elements
       # These are just styling containers (e.g. div.paragraph containing a <p>)
       klass = node["class"].to_s
-      
+
       # Skip common wrapper classes (including dialog wrappers and table overlays)
       # Using word boundaries (\b) for most, but provision__ classes need special handling due to hyphens
       return false if klass.match?(/\b(paragraph|general-recommendation|document|root|rules)\b/)
       return false if klass.include?("provision__dialog") || klass.include?("provision__table-overlay")
       return false if klass == "provision" || klass.start_with?("provision ")
-      
+
       # For other divs, only store if they have a meaningful class
       klass.present?
     else

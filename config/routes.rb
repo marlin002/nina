@@ -13,19 +13,19 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       # GET /api/v1/regulations
-      get 'regulations', to: 'regulations#index'
-      
+      get "regulations", to: "regulations#index"
+
       # GET /api/v1/regulations/:year/:number/structure
-      get 'regulations/:year/:number/structure', to: 'regulations#structure'
-      
+      get "regulations/:year/:number/structure", to: "regulations#structure"
+
       # GET /api/v1/regulations/:year/:number/sections/:section (no chapter)
-      get 'regulations/:year/:number/sections/:section', to: 'regulations#section_without_chapter'
-      
+      get "regulations/:year/:number/sections/:section", to: "regulations#section_without_chapter"
+
       # GET /api/v1/regulations/:year/:number/chapters/:chapter/sections/:section
-      get 'regulations/:year/:number/chapters/:chapter/sections/:section', to: 'regulations#section_with_chapter'
-      
+      get "regulations/:year/:number/chapters/:chapter/sections/:section", to: "regulations#section_with_chapter"
+
       # GET /api/v1/regulations/:year/:number/appendices/:appendix
-      get 'regulations/:year/:number/appendices/:appendix', to: 'regulations#appendix'
+      get "regulations/:year/:number/appendices/:appendix", to: "regulations#appendix"
     end
   end
 

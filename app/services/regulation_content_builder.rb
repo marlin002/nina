@@ -27,11 +27,11 @@ class RegulationContentBuilder
     if ar_elements.any?
       # Filter out the "Allmänna råd" heading element
       ar_elements_without_heading = ar_elements.reject do |element|
-        element.tag_name == 'div' && 
-        element.element_class == 'h2' && 
+        element.tag_name == "div" &&
+        element.element_class == "h2" &&
         element.text_content&.strip&.match?(/^Allmänna råd$/i)
       end
-      
+
       if ar_elements_without_heading.any?
         ar_html = ar_elements_without_heading.map(&:html_snippet).join("\n")
         authoritative_html = ar_html if ar_html.present?
@@ -47,7 +47,7 @@ class RegulationContentBuilder
 
   # Build HTML content for an appendix
   # @param year [Integer] Year
-  # @param number [Integer] Number  
+  # @param number [Integer] Number
   # @param appendix [String] Appendix identifier (e.g. "1", "2A")
   # @return [String, nil] HTML content or nil if appendix not found
   def self.appendix_html(year:, number:, appendix:)
@@ -57,7 +57,7 @@ class RegulationContentBuilder
       .joins(:scrape)
       .where(scrapes: { current: true })
       .where(regulation: code, appendix: appendix)
-      .where.not(text_content: [nil, ""])
+      .where.not(text_content: [ nil, "" ])
       .order(:position_in_parent, :id)
 
     return nil if elements.empty?
@@ -73,7 +73,7 @@ class RegulationContentBuilder
       .joins(:scrape)
       .where(scrapes: { current: true })
       .where(regulation: code, section: section)
-      .where.not(text_content: [nil, ""])
+      .where.not(text_content: [ nil, "" ])
 
     # Apply chapter filter
     if chapter.present?

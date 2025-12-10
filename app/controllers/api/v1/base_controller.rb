@@ -34,7 +34,7 @@ module Api
           raise ArgumentError, "Invalid number parameter"
         end
 
-        [year, number]
+        [ year, number ]
       end
     end
   end

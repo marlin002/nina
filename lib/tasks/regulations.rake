@@ -1,6 +1,6 @@
 namespace :regulations do
   desc "Diagnose parsing issues for a specific regulation section"
-  task :diagnose, [:regulation_code, :chapter, :section] => :environment do |t, args|
+  task :diagnose, [ :regulation_code, :chapter, :section ] => :environment do |t, args|
     regulation_code = args[:regulation_code] || "AFS 2023:3"
     chapter = args[:chapter]&.to_i
     section = args[:section]&.to_i || 4
@@ -117,7 +117,7 @@ namespace :regulations do
     end
 
     # Check for foreign strings
-    foreign_strings = ["Vem föreskrifterna riktar sig till", "1 §", "Tidsplanering", "5 §"]
+    foreign_strings = [ "Vem föreskrifterna riktar sig till", "1 §", "Tidsplanering", "5 §" ]
     puts "\n--- CHECKING FOR FOREIGN STRINGS ---"
     foreign_strings.each do |foreign|
       matching = elements.where("text_content ILIKE ?", "%#{foreign}%")

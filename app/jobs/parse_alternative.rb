@@ -59,7 +59,7 @@ class ParseScrapeElementsJob < ApplicationJob
       end
 
       # skip hidden elements
-      if child['aria-hidden'].to_s.downcase == 'true' || child['hidden']
+      if child["aria-hidden"].to_s.downcase == "true" || child["hidden"]
         Rails.logger.debug "Skipping hidden element at #{build_css_path(child, parent_path)}"
         next
       end

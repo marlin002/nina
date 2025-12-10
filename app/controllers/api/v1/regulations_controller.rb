@@ -10,7 +10,7 @@ module Api
           .map do |scrape|
             code = Regulations::Code.from_url(scrape.source.url)
             parsed = Regulations::Code.parse(code)
-            
+
             {
               code: code,
               year: parsed[:year],
@@ -19,7 +19,7 @@ module Api
             }
           end
           .compact
-          .sort_by { |r| [r[:year], r[:number]] }
+          .sort_by { |r| [ r[:year], r[:number] ] }
 
         render json: regulations
       end
@@ -28,9 +28,9 @@ module Api
       # Get structure of a regulation (chapters, sections, appendices)
       def structure
         year, number = validate_regulation_params
-        
+
         structure = RegulationStructureService.structure(year: year, number: number)
-        
+
         # Check if regulation exists
         if structure[:chapters].empty? && structure[:sections_without_chapter].empty? && structure[:appendices].empty?
           raise ActiveRecord::RecordNotFound, "Regulation not found: AFS #{year}:#{number}"
