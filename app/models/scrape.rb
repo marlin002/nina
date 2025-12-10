@@ -21,7 +21,7 @@ class Scrape < ApplicationRecord
   scope :today, -> { where(fetched_at: Date.current.all_day) }
 
   before_save :set_fetched_at
-  after_save :enqueue_element_parsing, if: :should_parse_elements?
+  after_commit :enqueue_element_parsing, if: :should_parse_elements?
 
   def display_name
     "Scrape #{id} - #{url}"
@@ -84,7 +84,8 @@ class Scrape < ApplicationRecord
     # 1. This is a new scrape (just created)
     # 2. The raw HTML has changed
     # 3. The scrape was marked as current
-    new_record? || raw_html_changed? || current_changed?
+    # Note: Use saved_change_to_* methods since this runs after save
+    saved_change_to_id? || saved_change_to_raw_html? || saved_change_to_current?
   end
 
   def enqueue_element_parsing

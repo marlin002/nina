@@ -1,0 +1,173 @@
+<% content_for :title, "API - iAFS" %>
+
+<div class="max-w-5xl mx-auto">
+  <h1 class="text-3xl font-bold text-slate-800 mb-6">iAFS API</h1>
+  
+  <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+    <h2 class="text-2xl font-semibold text-slate-700 mb-4">Om API:et</h2>
+    <p class="text-slate-600 mb-4">
+      iAFS erbjuder ett öppet, maskinläsbart API för att hämta innehåll från Arbetsmiljöverkets föreskrifter (AFS 2023-serien).
+      API:et returnerar JSON och är fritt att använda utan autentisering.
+    </p>
+    
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+      <p class="text-sm text-slate-700">
+        <strong>Bas-URL:</strong> <code class="bg-slate-100 px-2 py-1 rounded">/api/v1</code>
+      </p>
+    </div>
+
+    <h3 class="text-xl font-semibold text-slate-700 mb-3">Tillgängliga endpoints</h3>
+    <div class="space-y-3 mb-6">
+      <div class="border-l-4 border-slate-300 pl-4">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3">
+          <div class="flex-grow min-w-0">
+            <code class="text-sm bg-slate-100 px-2 py-1 rounded break-all">GET /api/v1/regulations</code>
+            <p class="text-sm text-slate-600 mt-1">Lista alla tillgängliga föreskrifter</p>
+          </div>
+          <button class="example-btn flex-shrink-0 px-3 py-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition self-start" data-url="regulations">
+            Testa
+          </button>
+        </div>
+      </div>
+      
+      <div class="border-l-4 border-slate-300 pl-4">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3">
+          <div class="flex-grow min-w-0">
+            <code class="text-sm bg-slate-100 px-2 py-1 rounded break-all">GET /api/v1/regulations/:year/:number/structure</code>
+            <p class="text-sm text-slate-600 mt-1">Hämta strukturen för en föreskrift (kapitel, paragrafer, bilagor)</p>
+          </div>
+          <button class="example-btn flex-shrink-0 px-3 py-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition self-start" data-url="regulations/2023/3/structure">
+            Testa
+          </button>
+        </div>
+      </div>
+      
+      <div class="border-l-4 border-slate-300 pl-4">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3">
+          <div class="flex-grow min-w-0">
+            <code class="text-sm bg-slate-100 px-2 py-1 rounded break-all">GET /api/v1/regulations/:year/:number/sections/:section</code>
+            <p class="text-sm text-slate-600 mt-1">Hämta innehåll för en paragraf (föreskrifter utan kapitel)</p>
+          </div>
+          <button class="example-btn flex-shrink-0 px-3 py-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition self-start" data-url="regulations/2023/1/sections/8">
+            Testa
+          </button>
+        </div>
+      </div>
+      
+      <div class="border-l-4 border-slate-300 pl-4">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3">
+          <div class="flex-grow min-w-0">
+            <code class="text-sm bg-slate-100 px-2 py-1 rounded break-all">GET /api/v1/regulations/:year/:number/chapters/:chapter/sections/:section</code>
+            <p class="text-sm text-slate-600 mt-1">Hämta innehåll för en paragraf (med kapitel)</p>
+          </div>
+          <button class="example-btn flex-shrink-0 px-3 py-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition self-start" data-url="regulations/2023/3/chapters/2/sections/4">
+            Testa
+          </button>
+        </div>
+      </div>
+      
+      <div class="border-l-4 border-slate-300 pl-4">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3">
+          <div class="flex-grow min-w-0">
+            <code class="text-sm bg-slate-100 px-2 py-1 rounded break-all">GET /api/v1/regulations/:year/:number/appendices/:appendix</code>
+            <p class="text-sm text-slate-600 mt-1">Hämta innehåll för en bilaga</p>
+          </div>
+          <button class="example-btn flex-shrink-0 px-3 py-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition self-start" data-url="regulations/2023/1/appendices/1">
+            Testa
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-sm text-slate-600">
+      <%= link_to "Fullständig API-dokumentation (Engelska)", "https://github.com/yourusername/nina/blob/main/API.md", class: "text-blue-600 hover:text-blue-800 underline", target: "_blank" %>
+    </p>
+  </div>
+
+  <!-- API Sandbox -->
+  <div class="bg-slate-50 rounded-lg shadow-lg p-6">
+    <h2 class="text-2xl font-semibold text-slate-700 mb-4">API Sandbox</h2>
+    <p class="text-slate-600 mb-4">Klicka på "Testa"-knapparna ovan för att fylla i URL:en, eller skriv en egen:</p>
+    
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-slate-700 mb-2">API URL:</label>
+      <div class="flex gap-2">
+        <button id="fetch-btn" class="flex-shrink-0 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition">
+          GET
+        </button>
+        <input type="text" id="api-url" placeholder="/api/v1/regulations" value="/api/v1/regulations"
+               class="flex-grow px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm">
+      </div>
+    </div>
+
+    <div id="response-container" class="mt-6" style="display: none;">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-lg font-semibold text-slate-700">Svar:</h3>
+        <span id="status-badge" class="px-3 py-1 text-sm font-medium rounded-full"></span>
+      </div>
+      <pre id="response-output" class="bg-slate-900 text-green-400 p-4 rounded-lg overflow-auto text-sm font-mono" style="max-height: 600px; min-height: 200px;"></pre>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const apiUrlInput = document.getElementById('api-url');
+  const fetchBtn = document.getElementById('fetch-btn');
+  const responseContainer = document.getElementById('response-container');
+  const responseOutput = document.getElementById('response-output');
+  const statusBadge = document.getElementById('status-badge');
+  const exampleBtns = document.querySelectorAll('.example-btn');
+
+  // Handle example button clicks
+  exampleBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const url = this.getAttribute('data-url');
+      apiUrlInput.value = '/api/v1/' + url;
+      apiUrlInput.focus();
+    });
+  });
+
+  // Handle fetch button click
+  fetchBtn.addEventListener('click', async function() {
+    const url = apiUrlInput.value;
+
+    fetchBtn.disabled = true;
+    fetchBtn.textContent = '...';
+    responseContainer.style.display = 'none';
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      // Show response
+      responseContainer.style.display = 'block';
+      responseOutput.textContent = JSON.stringify(data, null, 2);
+      
+      // Update status badge
+      if (response.ok) {
+        statusBadge.textContent = `${response.status} OK`;
+        statusBadge.className = 'px-3 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800';
+      } else {
+        statusBadge.textContent = `${response.status} ${response.statusText}`;
+        statusBadge.className = 'px-3 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800';
+      }
+    } catch (error) {
+      responseContainer.style.display = 'block';
+      responseOutput.textContent = `Error: ${error.message}`;
+      statusBadge.textContent = 'Error';
+      statusBadge.className = 'px-3 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800';
+    } finally {
+      fetchBtn.disabled = false;
+      fetchBtn.textContent = 'GET';
+    }
+  });
+
+  // Allow Enter key to trigger fetch
+  apiUrlInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      fetchBtn.click();
+    }
+  });
+});
+</script>
