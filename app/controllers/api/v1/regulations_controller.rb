@@ -132,6 +132,12 @@ module Api
           content_html: content_html
         }
       end
+
+      def not_found
+        render json: {
+          message: "API endpoint not found. See documentation at /scrapes/api_info."
+        }, status: :not_found
+      end
     end
   end
 end
