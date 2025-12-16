@@ -274,18 +274,18 @@ class ScrapesController < ApplicationController
   # Apply sorting based on sort_by parameter
   def apply_sort(results, sort_by)
     case sort_by
-    when "reference"
-      # Sort by complete reference: regulation (year+number), chapter, section, appendix
-      results.sort_by { |r| complete_reference_sort_key(r) }
     when "reference_desc"
-      # Sort by complete reference descending
+      # Sort by reference descending
       results.sort_by { |r| complete_reference_sort_key(r) }.reverse
     when "relevance"
-      # Default sort: by regulation then hierarchy (best for relevance)
+      # Sort by regulation then hierarchy (best for relevance)
       results.sort_by { |r| [ r[:reg_num].to_i, sort_hierarchy_key(r) ] }
+    when "relevance_desc"
+      # Sort by regulation then hierarchy (best for relevance)
+      results.sort_by { |r| [ r[:reg_num].to_i, sort_hierarchy_key(r) ] }.reverse
     else
-      # Default: by regulation then hierarchy
-      results.sort_by { |r| [ r[:reg_num].to_i, sort_hierarchy_key(r) ] }
+      # Default: by reference: regulation (year+number), chapter, section, appendix
+      results.sort_by { |r| complete_reference_sort_key(r) }
     end
   end
 

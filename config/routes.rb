@@ -26,6 +26,9 @@ Rails.application.routes.draw do
 
       # GET /api/v1/regulations/:year/:number/appendices/:appendix
       get "regulations/:year/:number/appendices/:appendix", to: "regulations#appendix"
+
+      # catch-all
+      match "*unmatched", to: "regulations#not_found", via: :all
     end
   end
 
