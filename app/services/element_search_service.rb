@@ -39,7 +39,7 @@ class ElementSearchService
 
     Element.from("(#{distinct_query}) AS elements")
       .includes(scrape: :source)
-      .limit(@limit)    
+      .limit(@limit)
   end
 
   private
