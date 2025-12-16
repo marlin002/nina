@@ -38,7 +38,8 @@ class ElementSearchService
       .to_sql
 
     Element.from("(#{distinct_query}) AS elements")
-      .limit(@limit)
+      .includes(scrape: :source)
+      .limit(@limit)    
   end
 
   private
