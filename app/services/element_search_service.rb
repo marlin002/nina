@@ -1,5 +1,5 @@
 class ElementSearchService
-  def initialize(limit: 500)
+  def initialize(limit: AppConstants::MAX_SEARCH_RESULTS)
     @limit = limit
   end
 
