@@ -56,7 +56,7 @@ class ScrapesController < ApplicationController
       # Check if this is a regex search
       if RegexSearchService.regex_search?(@query)
         # Execute regex search
-        regex_service = RegexSearchService.new(limit: 500)
+        regex_service = RegexSearchService.new(limit: AppConstants::MAX_SEARCH_RESULTS)
         @regex_results = regex_service.search(@query)
 
         # Set error if regex search failed
@@ -67,7 +67,7 @@ class ScrapesController < ApplicationController
         # Note: Regex searches are NOT logged (like sorted searches)
       else
         # Normal search: use ElementSearchService
-        search_service = ElementSearchService.new(limit: 500)
+        search_service = ElementSearchService.new(limit: AppConstants::MAX_SEARCH_RESULTS)
         elements = search_service.search(@query)
 
         # Map elements to result hashes with hierarchy info

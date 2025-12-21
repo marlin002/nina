@@ -5,4 +5,5 @@ Allow: /scrapes/about
 Allow: /scrapes/all
 Allow: /scrapes/api-info
 # Block searches
+Disallow: /search*
 Disallow: /scrapes/search*

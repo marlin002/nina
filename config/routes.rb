@@ -9,6 +9,9 @@ Rails.application.routes.draw do
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
 
+  # Top-level HTML search (simple query via ?q=...)
+  get "search", to: "search#index", as: :search
+
   # API routes
   namespace :api do
     namespace :v1 do
@@ -26,6 +29,9 @@ Rails.application.routes.draw do
 
       # GET /api/v1/regulations/:year/:number/appendices/:appendix
       get "regulations/:year/:number/appendices/:appendix", to: "regulations#appendix"
+
+      # GET /api/v1/search?q=arbetsgivaren
+      get "search", to: "search#index", defaults: { format: :json }
 
       # catch-all
       match "*unmatched", to: "regulations#not_found", via: :all

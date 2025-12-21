@@ -1,13 +1,12 @@
 class RegexSearchService
   TIMEOUT_SECONDS = 2
-  MAX_RESULTS = 500
 
   # Check if query is in regex format (/pattern/)
   def self.regex_search?(query)
     query.to_s.start_with?("/") && query.to_s.end_with?("/") && query.to_s.length > 2
   end
 
-  def initialize(limit: MAX_RESULTS)
+  def initialize(limit: AppConstants::MAX_SEARCH_RESULTS)
     @limit = limit
   end
 
