@@ -39,7 +39,7 @@ module Api
         elements.each do |element|
           ref = build_reference_path(element)
           next if ref.nil? || seen.include?(ref)
-          
+
           seen.add(ref)
           references << ref
         end

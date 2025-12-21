@@ -32,7 +32,7 @@ Rails.application.routes.draw do
 
       # GET /api/v1/search?q=arbetsgivaren
       get "search", to: "search#index", defaults: { format: :json }
-      
+
       # catch-all
       match "*unmatched", to: "regulations#not_found", via: :all
     end
