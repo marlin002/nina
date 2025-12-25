@@ -80,6 +80,4 @@ test:
 #
 production:
   <<: *default
-  database: nina_production
-  username: nina
-  password: <%= ENV["NINA_DATABASE_PASSWORD"] %>
+  url: <%= ENV.fetch("DATABASE_URL") %>
