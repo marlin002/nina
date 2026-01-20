@@ -20,6 +20,28 @@
         Använd sökfältet högst upp för att söka efter specifika termer i författningssamlingen. 
         Resultaten visar relevanta paragrafer och avsnitt där din sökterm förekommer.
       </p>
+	  <p class="text-slate-700 mb-4">
+		  Du kan även söka med REGEX om du börjar och avslutar söksträngen med ett snedstreck. Då skapas en lista med unika matchningar i bokstavsordning. Exempel: 
+	  </p>
+		  
+	  <ul class="list-disc pl-5 mb-4">
+		<li><strong>arbetsmiljö</strong>: 
+            <%= link_to search_path(q: "/\\w*rbetsmi\\w*/"), class: "text-blue-600 hover:text-blue-800 hover:underline", rel: "nofollow" do %>
+              <span class="font-medium">/\w*rbetsmi\w*/</span>
+			<% end %></li>
+		<li><strong>föreskrifter</strong>: 
+			<%= link_to search_path(q: "/\\w*FS\\s(?:19|20)\\d{2}:\\d+/"), class: "text-blue-600 hover:text-blue-800 hover:underline", rel: "nofollow" do %>
+              <span class="font-medium">/\w*FS\s(?:19|20)\d{2}:\d+/</span>
+			<% end %></li>
+		<li><strong>standarder</strong>:
+			<%= link_to search_path(q: "/\\w+\\s\\d+(?:-\\d+){1,2}:(?:19|20)\\d{2}/"), class: "text-blue-600 hover:text-blue-800 hover:underline", rel: "nofollow" do %>
+              <span class="font-medium">/\w+\s\d+(?:-\d+){1,2}:(?:19|20)\d{2}/</span>
+			<% end %></li>
+		<li><strong>lagar &amp; förordningar</strong>:
+			<%= link_to search_path(q: "/\\w*en\\s\\((?:19|20)\\d{2}:\\d{1,4}\\)(?:\\som(?:\\s\\w*){1,4})?/"), class: "text-blue-600 hover:text-blue-800 hover:underline", rel: "nofollow" do %>
+              <span class="font-medium">/\w*en\s\((?:19|20)\d{2}:\d{1,4}\)(?:\som(?:\s\w*){1,4})?/</span>
+			<% end %></li>
+	  </ul>
       
       <h2 class="text-2xl font-semibold text-slate-800 mt-8 mb-4">Kontakt</h2>
       <p class="text-slate-700 mb-4">
