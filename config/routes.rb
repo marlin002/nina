@@ -41,7 +41,6 @@ Rails.application.routes.draw do
   # Scrapes routes
   resources :scrapes, only: [ :index ] do
     collection do
-      get :search
       get :all
       get :about
       get :api_info
