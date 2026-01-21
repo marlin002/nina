@@ -82,7 +82,7 @@ class RegexSearchService
         <<-SQL,
           SELECT matched_string, COUNT(*) as count
           FROM (
-            SELECT unnest(regexp_matches(text_content, ?, 'gi')) as matched_string
+            SELECT LOWER(unnest(regexp_matches(text_content, ?, 'gi'))) as matched_string
             FROM elements
             WHERE current = true
               AND scrape_id IN (SELECT id FROM scrapes WHERE current = true)
