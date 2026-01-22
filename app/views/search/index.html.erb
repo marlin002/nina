@@ -4,12 +4,6 @@
   <div class="text-center py-12 bg-white rounded-lg shadow border border-red-200">
     <h3 class="text-xl font-semibold text-red-600 mb-2">Felaktig sökfras</h3>
     <p class="text-slate-600"><%= @query_error %></p>
-    <p class="text-slate-600">
-      <%= link_to "Läs snabbguiden för regex på Rexegg", "https://www.rexegg.com/regex-quickstart.php", 
-          target: "_blank", 
-          rel: "noopener noreferrer",
-          class: "text-blue-600 hover:text-blue-800 underline flex items-center justify-center gap-1.5" %>
-	</p>
   </div>
 <% elsif @query.present? %>
 

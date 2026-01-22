@@ -23,7 +23,7 @@
           <% @regex_results[:results].each do |result| %>
             <tr class="hover:bg-gray-50 transition">
               <td class="px-4 py-3 font-mono text-sm text-slate-800">
-                <%= link_to search_path(q: result[:matched_string]), class: "hover:text-blue-800 hover:underline", rel: "nofollow", data: { turbo_prefetch: false } do %>
+                <%= link_to search_path(q: result[:matched_string], sort_by: 'reference'), class: "text-blue-600 hover:text-blue-800 hover:underline" do %>
                   <%= result[:matched_string] %>
                 <% end %>
               </td>
