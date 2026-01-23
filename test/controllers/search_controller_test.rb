@@ -1,6 +1,6 @@
 require "test_helper"
 
-class ScrapesControllerTest < ActionDispatch::IntegrationTest
+class SearchControllerTest < ActionDispatch::IntegrationTest
   test "search without sort_by parameter logs the search" do
     # Create some test data
     source = sources(:one)
@@ -9,7 +9,7 @@ class ScrapesControllerTest < ActionDispatch::IntegrationTest
 
     initial_count = SearchQuery.count
 
-    get search_scrapes_path, params: { q: "test query" }
+    get search_path, params: { q: "test query" }
 
     assert_response :success
     # If there are results, a new search should be logged
@@ -28,7 +28,7 @@ class ScrapesControllerTest < ActionDispatch::IntegrationTest
 
     initial_count = SearchQuery.count
 
-    get search_scrapes_path, params: { q: "test query", sort_by: "reference" }
+    get search_path, params: { q: "test query", sort_by: "reference" }
 
     assert_response :success
     # Even if there are results, no new search should be logged
@@ -40,7 +40,7 @@ class ScrapesControllerTest < ActionDispatch::IntegrationTest
     # These links now include sort_by: 'reference'
     initial_count = SearchQuery.count
 
-    get search_scrapes_path, params: { q: "arbetsmiljö", sort_by: "reference" }
+    get search_path, params: { q: "arbetsmiljö", sort_by: "reference" }
 
     assert_response :success
     # No new search should be logged because sort_by is present
@@ -50,7 +50,7 @@ class ScrapesControllerTest < ActionDispatch::IntegrationTest
   test "search with sort_by and no results does not log" do
     initial_count = SearchQuery.count
 
-    get search_scrapes_path, params: { q: "xyznonexistent", sort_by: "reference" }
+    get search_path, params: { q: "xyznonexistent", sort_by: "reference" }
 
     assert_response :success
     # No search should be logged (no results + sort_by present)
@@ -62,7 +62,7 @@ class ScrapesControllerTest < ActionDispatch::IntegrationTest
     scrape = scrapes(:one)
     element = elements(:one)
 
-    get search_scrapes_path, params: { q: "/test/" }
+    get search_path, params: { q: "/test/" }
 
     assert_response :success
     assert_not_nil assigns(:regex_results)
@@ -76,7 +76,7 @@ class ScrapesControllerTest < ActionDispatch::IntegrationTest
 
     initial_count = SearchQuery.count
 
-    get search_scrapes_path, params: { q: "/arbetsmiljö/" }
+    get search_path, params: { q: "/arbetsmiljö/" }
 
     assert_response :success
     # Regex searches should never be logged
@@ -84,7 +84,7 @@ class ScrapesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "invalid regex shows error" do
-    get search_scrapes_path, params: { q: "/[unclosed/" }
+    get search_path, params: { q: "/[unclosed/" }
 
     assert_response :success
     assert_not_nil assigns(:query_error)
@@ -96,7 +96,7 @@ class ScrapesControllerTest < ActionDispatch::IntegrationTest
     scrape = scrapes(:one)
     element = elements(:one)
 
-    get search_scrapes_path, params: { q: "arbetsmiljö" }
+    get search_path, params: { q: "arbetsmiljö" }
 
     assert_response :success
     assert_nil assigns(:regex_results)
