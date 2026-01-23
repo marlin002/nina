@@ -1,7 +1,7 @@
 class ScrapesController < ApplicationController
   include ApplicationHelper
   include ActionView::Helpers::TextHelper
-  before_action :set_noindex, except: [ :about, :all ]
+  before_action :set_noindex, except: [ :all ]
 
   def index
     scrapes_unsorted = Scrape.joins(:source).includes(:source)
@@ -40,10 +40,6 @@ class ScrapesController < ApplicationController
     }
   end
 
-
-  def about
-    # Simple about page
-  end
 
   def api_info
     # API documentation and sandbox page
