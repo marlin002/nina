@@ -1,9 +1,19 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+# See https://www.robotstxt.org/robotstxt.html for documentation
 User-agent: *
+
+# 1. Prevent indexing of raw API responses
+Disallow: /api
+
+# 2. Prevent indexing of search result pages (avoids infinite crawl loops)
+Disallow: /search
+
+# 3. Prevent indexing of health checks and internal tools
+Disallow: /up
+Disallow: /service-worker         # PWA file – not for crawling
+Disallow: /manifest               # PWA file – not for crawling
+Disallow: /scrapes/*/raw          # Block raw data endpoints 
+Disallow: /scrapes/dev_reference_lookup
+
+# 4. Allow the rest of the UI
 Allow: /
-Allow: /scrapes/about
-Allow: /scrapes/all
-Allow: /scrapes/api-info
-# Block searches
-Disallow: /search*
-Disallow: /scrapes/search*
+Crawl-delay: 1
