@@ -23,7 +23,7 @@
           <% @regex_results[:results].each do |result| %>
             <tr class="hover:bg-gray-50 transition">
               <td class="px-4 py-3 font-mono text-sm text-slate-800">
-                <%= link_to search_path(q: result[:matched_string]), class: "hover:text-blue-800 hover:underline", rel: "nofollow", data: { turbo_prefetch: false } do %>
+                <%= link_to search_path(q: result[:matched_string], sort_by: 'reference'), class: "text-blue-600 hover:text-blue-800 hover:underline" do %>
                   <%= result[:matched_string] %>
                 <% end %>
               </td>
@@ -40,10 +40,10 @@
       <h3 class="text-xl font-semibold text-slate-700 mb-2"><%= t('search.empty.no_results') %></h3>
       <p class="text-slate-600"><%= t('search.regex.no_matches_tip') %></p>
     <p class="text-slate-600">
-      <%= link_to "Läs snabbguiden för regex på Rexegg", "https://www.rexegg.com/regex-quickstart.php", 
+      Läs snabbguiden för regex på <%= link_to "Rexegg", "https://www.rexegg.com/regex-quickstart.php", 
           target: "_blank", 
           rel: "noopener noreferrer",
-          class: "text-blue-600 hover:text-blue-800 underline flex items-center justify-center gap-1.5" %>
+          class: "text-blue-600 hover:text-blue-800 underline" %>
 	</p>
     </div>
   <% end %>

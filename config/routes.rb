@@ -12,6 +12,9 @@ Rails.application.routes.draw do
   # Top-level HTML search (simple query via ?q=...)
   get "search", to: "search#index", as: :search
 
+  # Top-level about page
+  get "about", to: "about#index", as: :about
+
   # API routes
   namespace :api do
     namespace :v1 do
@@ -42,7 +45,6 @@ Rails.application.routes.draw do
   resources :scrapes, only: [ :index ] do
     collection do
       get :all
-      get :about
       get :api_info
       get :dev_reference_lookup
     end
