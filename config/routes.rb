@@ -54,5 +54,5 @@ Rails.application.routes.draw do
   end
 
   # Defines the root path route ("/")
-  root "scrapes#index"
+  root "home#index"
 end
