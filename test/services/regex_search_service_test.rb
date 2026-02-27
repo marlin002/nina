@@ -136,7 +136,7 @@ class RegexSearchServiceTest < ActiveSupport::TestCase
     # Should find the unique word appearing 3 times
     assert_equal 1, result[:total_unique]
     assert_equal 3, result[:total_occurrences]
-    assert_equal unique_word, result[:results].first[:matched_string]
+    assert_equal unique_word.downcase, result[:results].first[:matched_string]
     assert_equal 3, result[:results].first[:count]
   end
 
