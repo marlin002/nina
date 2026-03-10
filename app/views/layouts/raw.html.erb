@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head role="banner">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iAFS</title>
+
+  <!-- Load standard app styles & JS (Tailwind, Stimulus) for the Navigation -->
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+
+  <style>
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 100px; /* Accounts for fixed nav */
+    }
+
+    /* Don't style body like a document; navbar needs full width */
+    body { margin: 0; background: #f9fafb; }
+
+    /* Scope all regulatory styles so they don't bleed into the Tailwind Navigation */
+    .regulatory-wrapper {
+      font-family: Georgia, serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px;
+      line-height: 1.6;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); /* Subtle document shadow */
+      color: #2c3e50;
+    }
+
+    /* Revert Tailwind's CSS reset inside the document wrapper */
+    .regulatory-wrapper h1 { font-size: 2em; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; }
+    .regulatory-wrapper h2 { font-size: 1.5em; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; }
+    .regulatory-wrapper h3 { font-size: 1.17em; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; }
+    .regulatory-wrapper p { margin: 1em 0; }
+    .regulatory-wrapper ol { margin: 1em 0; padding-left: 2em; list-style-type: decimal; }
+    .regulatory-wrapper ul { margin: 1em 0; padding-left: 2em; list-style-type: disc; }
+    
+    .regulatory-wrapper table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+    .regulatory-wrapper th, .regulatory-wrapper td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    .regulatory-wrapper th { background-color: #f2f2f2; }
+
+    /* Your existing regulatory custom styles */
+    .provision { margin: 20px 0; padding: 15px; border-left: 4px solid #007acc; background: #f8f9fa; }
+    .nav-hint { position: fixed; top: 80px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 8px 12px; border-radius: 4px; font-size: 12px; z-index: 1000; }
+    .regulation-header { background: #f8f9fa; padding: 20px; margin-bottom: 30px; border-radius: 8px; border-left: 4px solid #007acc; }
+    .regulation-header h1 { color: #2c3e50; margin: 0 0 10px 0; font-size: 1.8em; font-weight: 600; }
+    .regulation-subject { color: #495057; margin: 0 0 15px 0; font-size: 1.2em; font-weight: 500; line-height: 1.4; }
+    .regulation-meta { display: flex; gap: 30px; flex-wrap: wrap; }
+    .meta-item { font-size: 0.9em; }
+    .meta-item .label { color: #6c757d; font-weight: 500; }
+    .meta-item .value { color: #495057; margin-left: 5px; }
+    .source-link { color: #007acc; text-decoration: none; }
+    .source-link:hover { text-decoration: underline; }
+    .element-focus { display: block; background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 10px 15px; margin: 15px 0; border-radius: 4px; }
+    .element-focus:target { animation: highlight-pulse 2s ease-out; }
+    @keyframes highlight-pulse { 0%, 100% { background-color: #fff3cd; } 50% { background-color: #ffe69c; } }
+    
+    .section-sign { display: inline; font-weight: 600; color: #2c3e50; }
+    .section-sign::before { content: ""; display: block; margin-top: 1.5em; }
+    .section-sign + .paragraph { display: inline; }
+    .section-sign + .paragraph > p { display: inline; margin: 0; }
+    .section-sign + .paragraph > ol, .section-sign + .paragraph > ul, .section-sign + .paragraph > div { display: block; margin-top: 0.5em; }
+  </style>
+</head>
+
+<body class="bg-gray-50">
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-blue-600 text-white px-4 py-2 rounded">Skip to content</a>
+  <!-- Shared Navigation -->
+  <%= render "shared/navigation" %>
+
+  <!-- mt-24 pushes content below the fixed navbar safely -->
+  <main id="main-content" role="main" class="container mx-auto mt-24 px-5 py-6">
+    <div class="regulatory-wrapper">
+      <div class="regulation-header">
+        <h1><%= @regulation_name %></h1>
+        <h2 class="regulation-subject"><%= @regulation_title %></h2>
+        
+        <div class="regulation-meta">
+          <div class="meta-item">
+            <span class="label">Paragrafer:</span>
+            <span class="value"><%= @article_count %></span>
+          </div>
+          <div class="meta-item">
+            <span class="label">Allmänna råd:</span>
+            <span class="value"><%= @general_recommendation_count %></span>
+          </div>
+          <div class="meta-item">
+            <span class="label">Bilagor:</span>
+            <span class="value"><%= @appendix_count %></span>
+          </div>
+          <div class="meta-item">
+            <span class="label">Källa:</span>
+            <span class="value"><a href="<%= @source_url %>" target="_blank" class="source-link">Visa på AV.se</a></span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="regulation-content">
+        <!-- The HTML generated by the controller goes here -->
+        <%= yield %>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
