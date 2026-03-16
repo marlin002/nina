@@ -115,7 +115,7 @@ class ScrapesController < ApplicationController
 
     highlighted_html = highlight_raw_html(html, @query)
 
-    render html: highlighted_html.html_safe, layout: "raw_content"
+    render html: highlighted_html.html_safe, layout: "raw"
   rescue ActiveRecord::RecordNotFound
     redirect_to scrapes_path, alert: "Scrape not found"
   end
