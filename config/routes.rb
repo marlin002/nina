@@ -14,6 +14,8 @@ Rails.application.routes.draw do
 
   # Top-level about page
   get "about", to: "about#index", as: :about
+  # Top-level definitions page
+  get "alla-definitioner", to: "definitions#index", as: :definitions
 
   # API routes
   namespace :api do

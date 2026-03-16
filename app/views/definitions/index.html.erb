@@ -1,0 +1,33 @@
+<% content_for :title, "Alla definitioner" %>
+
+<div class="max-w-6xl mx-auto">
+  <div class="bg-white rounded-lg shadow-lg p-8">
+    <h1 class="text-3xl font-bold text-slate-800 mb-2">Alla definitioner</h1>
+    <p class="text-slate-600 mb-6">
+      Samlad ordlista över begrepp och betydelser från samtliga föreskrifter.
+    </p>
+
+    <% if @definitions.any? %>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-200">
+          <thead class="bg-slate-100">
+            <tr>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700">Begrepp</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700">Betydelse</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 bg-white">
+            <% @definitions.each do |definition| %>
+              <tr>
+                <td class="px-4 py-3 text-sm font-medium text-slate-800"><%= definition[:begrepp] %></td>
+                <td class="px-4 py-3 text-sm text-slate-700"><%= definition[:betydelse] %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="text-slate-600">Inga definitioner hittades.</p>
+    <% end %>
+  </div>
+</div>
