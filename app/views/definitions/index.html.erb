@@ -29,5 +29,9 @@
     <% else %>
       <p class="text-slate-600">Inga definitioner hittades.</p>
     <% end %>
+	<p class="text-slate-600 mb-6"><strong>Fler begrepp:</strong>:
+		<%= link_to search_path(q: "/med.*(?<!som\\s)avses/"), class: "text-blue-600 hover:text-blue-800 hover:underline", rel: "nofollow" do %>
+          <span class="font-medium">"med .. avses .."</span>
+		<% end %></p>
   </div>
 </div>
